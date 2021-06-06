@@ -131,6 +131,9 @@
           var cartObject = data.val();  //all prodcuts object
           const shopping_cart = document.getElementById("shopping_cart");
           for(var cartId in cartObject){
+            if(cartId == "addressDetails" || cartId == "totalCartPrice"){
+              continue;
+            }
             var category = cartObject[cartId].category;
             var productId = cartObject[cartId].productId;
             var quantity = cartObject[cartId].quantity;

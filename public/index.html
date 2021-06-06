@@ -323,11 +323,9 @@
                   //get Picture icons
                   let img = document.createElement("img");
                   var storageRef = firebase.storage().ref(); 
-
-                  var idN = "/id" + j;
                   
                   // storageRef.child('productCategory/'+categoryValue+'/id0'+ "/image0" + '.jpg').getDownloadURL().then(function(url) {
-                  storageRef.child('productCategory/'+categoryValue+ idN+ "/image0" + '.jpg').getDownloadURL().then(function(url) {
+                  storageRef.child('productCategory/'+categoryValue+ "/" + prodcutId + "/image0" + '.jpg').getDownloadURL().then(function(url) {
                     // img.src = "images/p1.png";
                     img.src = url;
                     img.alt = "";
@@ -347,11 +345,11 @@
                       break;
                     }
                   }
-              
+
                   let aAdd = document.createElement("button");
                   aAdd.className = "add_cart_btn";
                   aAdd.textContent = "Add To Cart";
-                  aAdd.setAttribute("onclick", "cartToFirebase("+categoryId+j+")");
+                  aAdd.setAttribute("onclick", "cartToFirebase("+categoryId+prodcutId.substring(2)+")");
 
 
                   // let spanAddCart = document.createElement("span");
@@ -393,7 +391,7 @@
                 
                   //get Picture icons for modal
                   let image = document.createElement("img"); 
-                  storageRef.child('productCategory/'+categoryValue+idN+ "/image0" + '.jpg').getDownloadURL().then(function(url) {
+                  storageRef.child('productCategory/'+categoryValue + "/" + prodcutId + "/image0" + '.jpg').getDownloadURL().then(function(url) {
                     // img.src = "images/p1.png"; 
                     image.src = url;
                     image.alt = "";
@@ -430,7 +428,7 @@
                   }
                   // aAdd.setAttribute("onclick", "cartToFirebase("+categoryId+k+")");
 
-                  btnModalAdd.setAttribute("onclick", "cartToFirebase("+categoryId+j+")");
+                  btnModalAdd.setAttribute("onclick", "cartToFirebase("+categoryId+prodcutId.substring(2)+")");
 
                   divModalB.append(image);
                   divModalB.append(pPrice);

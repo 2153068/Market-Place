@@ -13,6 +13,7 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 firebase.auth.Auth.Persistence.LOCAL;
 
+
 function login(){
   var email = document.getElementById("email").value;
   var password = document.getElementById("password").value;
@@ -29,8 +30,6 @@ function login(){
     window.alert(errorMessage)
   });
 }
-
-
 
 function register(fName, lName, dob, email, password, cPassword){
   var returnMesage = "";
@@ -217,8 +216,10 @@ function confirmYourOrder(){
       difference = available_money - total_cart_price;
       if (difference >= 0){
         updateInFirebase(difference);
-        window.alert("Your Order Is Confirmed!");
-        window.location.href = "index.html";
+        if(address()){  //not empty
+          window.alert("Your Order Is Confirmed!");
+          window.location.href = "index.html";
+        }
       }
       else { // if user does not have enough funds to complete order
         window.alert("You do not have enough funds to complete this order");
@@ -237,27 +238,107 @@ function updateInFirebase(difference){
   });
 }
 
-function pay(){
-  var streetAddress = document.getElementById("streetAddress").value;
-  window.alert(streetAddress)
-  firebase.auth().onAuthStateChanged(function(user){
-    var userUid = user.uid;
-    const dbRef = firebase.database().ref();
-    dbRef.child("users").child(userUid).child("cart").child(categoryId).child("totalPrice").set(price*quantity);
+function isEmpty(arr){
+  for(var s in arr){
+    if(arr[s] === ''){
+      window.alert("Please fill all address fields.")
+      return true;
+    }
+  }
+  return false;
+}
+
+function updateAddressUser(userUid, addressData){
+  const dbRef = firebase.database().ref();
+  dbRef.child("users").child(userUid).child("last2Addresses").once("value", function(data) {
+    var address = data.val();
+
+    if(address == null){ //new
+      //update 1st address in database
+      dbRef.child("users").child(userUid).child("last2Addresses").child("id0").set(addressData);
+    }
+    else{
+      id0 = address["id0"];  //1st in (oldest)
+      if(!(JSON.stringify(id0) === JSON.stringify(addressData))){
+        id1 = address["id1"];
+        if(id1 == null){
+          //update 2nd address in database
+          dbRef.child("users").child(userUid).child("last2Addresses").child("id1").set(addressData);
+        }
+        else{
+          if(!(JSON.stringify(id1) === JSON.stringify(addressData))){
+            dbRef.child("users").child(userUid).child("last2Addresses").child("id1").set(addressData);
+            dbRef.child("users").child(userUid).child("last2Addresses").child("id0").set(id1);
+          }
+        }
+      }
+    }
   });
 }
 
-function checkoutDelevery(){
-  var mycars = new Array();
-  mycars[0] = 'Herr';
-  mycars[1] = 'Frau';
+function address(){
+  var streetAddress = document.getElementById("streetAddress1").value;
+  var suburb = document.getElementById("suburb1").value;
+  var city = document.getElementById("city1").value;
+  var province = document.getElementById("province1").value;
+  var postalCode = document.getElementById("postalCode1").value;
+  var addressData = 
+    {
+      streetAddress: streetAddress,
+      suburb: suburb,
+      city: city,
+      province: province,
+      postalCode: postalCode
+    };
+  if(!isEmpty(addressData)){
+    firebase.auth().onAuthStateChanged(function(user){
+      var userUid = user.uid;
+      const dbRef = firebase.database().ref();
 
-  var options = '';
+      //update both addresses in Firebase
+      updateAddressUser(userUid, addressData);
 
-  for (var i = 0; i < mycars.length; i++) {
-    options += '<option value="' + mycars[i] + '" />';
+      //address for this cart
+      dbRef.child("users").child(userUid).child("cart").child("addressDetails").set(addressData);
+    });
+    return true;
   }
-  document.getElementById('streetAddress').innerHTML = options;
+  else{
+    return false;
+  }
+}
+
+function checkoutDelevery(){  //called when opening the page
+  var addressDetails = [];  //2d matrix containg address info
+  firebase.auth().onAuthStateChanged(function(user){
+    var userUid = user.uid;
+    const dbRef = firebase.database().ref();
+    dbRef.child("users").child(userUid).child("last2Addresses").once("value", function(data) {
+      var address = data.val();
+      for(var addressId in address){
+        var currArray = [];
+        for(var addressDetail in address[addressId]){
+          currArray.push(address[addressId][addressDetail]);
+        }
+        addressDetails.push(currArray);
+      }
+
+      var addressDetailsArr = ["city", "postalCode", "province", "streetAddress", "suburb"]
+      for(var j=0; j<addressDetails[0].length; j++){
+        var addressDetailsSpecific = new Array();
+        for(var i=0; i<addressDetails.length; i++){
+          addressDetailsSpecific[i] = addressDetails[i][j];
+        }
+        var options = '';
+
+        for (var i = 0; i < addressDetailsSpecific.length; i++) {
+          options += '<option value="' + addressDetailsSpecific[i] + '" />';
+        }
+        //auto populate
+        document.getElementById(addressDetailsArr[j]).innerHTML = options;
+      }
+    });
+  });
 } 
 
 function init(){
@@ -278,7 +359,15 @@ function init(){
         if("totalCartPrice" in products){
           productsSize--;
         }
-        document.getElementById("cart").innerHTML ="CART (" + productsSize+")";
+        if("addressDetails" in products){
+          productsSize--;
+        }
+        if(productsSize != 0){
+          document.getElementById("cart").innerHTML ="CART (" + productsSize+")";
+        }
+        else{
+          document.getElementById("cart").innerHTML ="CART";
+        }
       } 
       else{
         document.getElementById("cart").innerHTML = "CART";
