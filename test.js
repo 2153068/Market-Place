@@ -119,6 +119,13 @@ test('login("shlomdf@gmail.com", "123456") should return "logged"', function(ass
   assert.deepEqual(result, expected);
 });
 
+//test logging out
+test('logout should log user out', function(assert){
+  var result = logout();
+  var expected = undefined;
+  assert.deepEqual(result, expected);
+});
+
 
 
 //passwords matching
