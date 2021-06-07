@@ -453,6 +453,7 @@ if (typeof module !== 'undefined' && module.exports) {
      {
        register,
        login,
+       logout,
      };
   }
   
