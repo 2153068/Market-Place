@@ -176,18 +176,31 @@ function removeProduct(userUidAndCartId){ //seperated by #
   });
 }
 
-function updateQuantity(userUidAndCartId){ //seperated by #
-  var arr =  userUidAndCartId.split("#");
-  var userUid  = arr[0];
-  var categoryProductId = arr[1];
-  var quantityInput = document.getElementById(categoryProductId).value;
+function updateQuantity(userUidAndCartId, quantity){ //seperated by #
+  return new Promise( resolve => {
+    var arr =  userUidAndCartId.split("#");
+    var userUid  = arr[0];
+    var categoryProductId = arr[1];
+    var quantityInput;
+    if (isWebsite()){
+      quantityInput = document.getElementById(categoryProductId).value;
+    }else{
+      quantityInput = quantity; 
+      console.log("quantity is "+quantity)
+    }
+    // window.alert(categoryProductId)
+    const rootRef = firebase.database().ref();
+    var categotyProd = rootRef.child("users").child(userUid).child("cart").child(categoryProductId).child("quantity");
+    categotyProd.set(quantityInput, function(error){
+      if (!error){
+        resolve("Success")
+      }
+    });
 
-  const rootRef = firebase.database().ref();
-  var categotyProd = rootRef.child("users").child(userUid).child("cart").child(categoryProductId).child("quantity");
-  categotyProd.set(quantityInput);
-
-  window.location.href = "cart.html";
-
+    if (isWebsite()){
+      window.location.href = "cart.html";
+    }
+});
 }
 
 function checkout(){ 
@@ -483,6 +496,7 @@ if (typeof module !== 'undefined' && module.exports) {
        getCategoryAndProductId,
        cartToFirebase,
        removeProduct,
+       updateQuantity,
      };
   }
   

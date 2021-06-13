@@ -10,6 +10,7 @@ if (typeof module !== 'undefined' && module.exports) { // check we're server-sid
   var getCategoryAndProductId = methods.getCategoryAndProductId;
   var cartToFirebase = methods.cartToFirebase;
   var removeProduct = methods.removeProduct;
+  var updateQuantity = methods.updateQuantity;
 }
 
 //sprint 1 
@@ -174,6 +175,17 @@ QUnit.test( 'removeProduct() should return "Success"', assert => {
   return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
       return cartToFirebase("1001").then( result => {
         return removeProduct("4Xi1q4hZ7RQYLPZZhckcP9X29Lg2#Clothes_id1").then( result => {
+          assert.equal( result, "Success");
+        });
+      });
+  })
+});
+
+//teting updateQuantity function
+QUnit.test( 'updateQuantity() should return "Success"', assert => {
+  return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
+      return cartToFirebase("1001").then( result => {
+        return updateQuantity("4Xi1q4hZ7RQYLPZZhckcP9X29Lg2#Clothes_id1",50).then( result => {
           assert.equal( result, "Success");
         });
       });
