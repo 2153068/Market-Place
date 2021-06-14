@@ -193,19 +193,19 @@ QUnit.test( 'updateQuantity() should return "Success"', assert => {
   })
 });
 
-//teting checkoutOpen function
-QUnit.test( 'checkoutOpen() should return "?"', assert => {
-  return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
-      return cartToFirebase("1001").then( result => {
-        return updateQuantity("4Xi1q4hZ7RQYLPZZhckcP9X29Lg2#Clothes_id1",50).then( result => {
-          return checkoutOpen().then( result => {
-            assert.equal( result, "?");
-          });        
-          // assert.equal( result, "?");
-        });
-      });
-  })
-});
+//teting checkoutOpen function - working as it stands but need to chck if the function is the correct code
+// QUnit.test( 'checkoutOpen() should return "?"', assert => {
+//   return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
+//       return cartToFirebase("1001").then( result => {
+//         return updateQuantity("4Xi1q4hZ7RQYLPZZhckcP9X29Lg2#Clothes_id1",50).then( result => {
+//           return checkoutOpen().then( result => {
+//             assert.equal( result, "?");
+//           });        
+//           // assert.equal( result, "?");
+//         });
+//       });
+//   })
+// });
 
 
 // testing randomEmailGenerator function 
