@@ -11,7 +11,9 @@ if (typeof module !== 'undefined' && module.exports) { // check we're server-sid
   var cartToFirebase = methods.cartToFirebase;
   var removeProduct = methods.removeProduct;
   var updateQuantity = methods.updateQuantity;
+  var confirmYourOrder = methods.confirmYourOrder;
   var checkoutOpen = methods.checkoutOpen;
+  var isEmpty = methods.isEmpty;
 }
 
 //sprint 1 
@@ -207,6 +209,31 @@ QUnit.test( 'updateQuantity() should return "Success"', assert => {
 //   })
 // });
 
+// //teting confirmYourOrder function
+// QUnit.test( 'confirmYourOrder() should return "?"', assert => {
+//   return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
+//       return cartToFirebase("1001").then( result => {
+//         return updateQuantity("4Xi1q4hZ7RQYLPZZhckcP9X29Lg2#Clothes_id1",5000).then( result => {
+//           return confirmYourOrder().then(result => {
+//             assert.equal( result, "?");
+//           })
+//         });
+//       });
+//   })
+// });
+
+
+// // testing isEmpty function when array is not empty 
+// QUnit.test( 'isEmpty([1,2,3]) testing, should return false', assert => {
+//   result = isEmpty([1,2,3]);
+//   assert.equal( result, false);
+// });
+
+// // testing isEmpty function when array is not empty 
+// QUnit.test( 'isEmpty([]) testing should return true', assert => {
+//   result = isEmpty([]);
+//   assert.equal( result, true);
+// });
 
 // testing randomEmailGenerator function 
 QUnit.test( 'generateRandomEmail(5) testing ', assert => {

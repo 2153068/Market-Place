@@ -219,7 +219,7 @@ function checkoutOpen(){
           console.log("Cart obj"+ cartObject)
           for(var categoryId in cartObject){//////////////////////////////////////////////compare code with Moshe
             if(categoryId != "totalCartPrice"){
-              console.log("Category id: "+ categoryId)
+              window.alert("Category id: "+ categoryId)
               var category = cartObject[categoryId].category;
               var productId = cartObject[categoryId].productId
               var quantity = cartObject[categoryId].quantity;
@@ -268,27 +268,35 @@ function checkoutOpen(){
 
 //called when Confirm Your Order is clicked on
 function confirmYourOrder(){
-  firebase.auth().onAuthStateChanged(function(user){
-    var difference;
-    var userUid = user.uid;
-    const dbRef = firebase.database().ref();
-    dbRef.child("users").child(userUid).once("value", function(data) {
-      var userObject = data.val();  //all prodcuts object
-      var available_money = userObject["details"].availableMoney;
-      var total_cart_price = userObject["cart"].totalCartPrice;
-      difference = available_money - total_cart_price;
-      if (difference >= 0){
-        if(address()){  //not empty
-          updateInFirebase(difference);
-          updateOrderHistoryFirebase();
-          window.alert("Your Order Is Confirmed!");
-          window.location.href = "index.html";
-        }
-      }
-      else { // if user does not have enough funds to complete order
-        window.alert("You do not have enough funds to complete this order");
-      }
-    });
+    return new Promise( resolve => {
+      firebase.auth().onAuthStateChanged(function(user){
+        var difference;
+        var userUid = user.uid;
+        const dbRef = firebase.database().ref();
+        dbRef.child("users").child(userUid).once("value", function(data) {
+        var userObject = data.val();  //all prodcuts object
+          var available_money = userObject["details"].availableMoney;
+          var total_cart_price = userObject["cart"].totalCartPrice;
+          difference = available_money - total_cart_price;
+          if (difference >= 0){
+            if(address()){  //not empty
+              updateInFirebase(difference);
+              updateOrderHistoryFirebase();
+              if (isWebsite()){
+                window.alert("Your Order Is Confirmed!");
+                window.location.href = "index.html";
+              }
+            
+            }
+          }
+          else { // if user does not have enough funds to complete order
+            if (isWebsite()){
+              window.alert("You do not have enough funds to complete this order");
+            }
+          }
+        });
+      });
+      resolve("?")
   });
 }
 
@@ -305,7 +313,9 @@ function updateInFirebase(difference){
 function isEmpty(arr){
   for(var s in arr){
     if(arr[s] === ''){
-      window.alert("Please fill all address fields.")
+      if (isWebsite()){
+        window.alert("Please fill all address fields.")
+      }
       return true;
     }
   }
@@ -340,12 +350,26 @@ function updateAddressUser(userUid, addressData){
   });
 }
 
-function address(){
-  var streetAddress = document.getElementById("streetAddress1").value;
-  var suburb = document.getElementById("suburb1").value;
-  var city = document.getElementById("city1").value;
-  var province = document.getElementById("province1").value;
-  var postalCode = document.getElementById("postalCode1").value;
+function address(streetAddressI, suburbI, cityI, provinceI, postalCodeI){
+  var streetAddress;
+  var suburb;
+  var city;
+  var province;
+  var postalCode;
+  if (isWebsite()){
+    streetAddress = document.getElementById("streetAddress1").value;
+    suburb = document.getElementById("suburb1").value;
+    city = document.getElementById("city1").value;
+    province = document.getElementById("province1").value;
+    postalCode = document.getElementById("postalCode1").value;
+  }else{
+    streetAddress = streetAddressI;
+    suburb = suburbI;
+    city = cityI;
+    province = provinceI;
+    postalCode = postalCodeI; 
+  }
+ 
   var addressData = 
     {
       streetAddress: streetAddress,
@@ -476,6 +500,650 @@ function init(){
   });
 }
 
+function indexOnOpen(){
+  const dbRef = firebase.database().ref();
+  dbRef.child("prodcutCategory").once("value", function(data) {
+    var category = data.val();  //all prodcuts object
+    var i = 0;
+    for(var categoryName in category){
+      var categoryValue = categoryName;
+
+      //create html rows and columns dynamically
+      let row = document.createElement("div");
+      row.className = "row";
+
+      const container = document.getElementById("container");
+    
+      let prodcutCategoryH = document.createElement("div");
+      prodcutCategoryH.className = "heading_container heading_center";
+
+      let prodcutCategory = document.createElement("h2");
+      prodcutCategory.textContent = categoryValue;
+      prodcutCategoryH.append(prodcutCategory);
+
+      container.append(prodcutCategoryH);
+
+      var j = 0;
+      for(var prodcutId in category[categoryName]){
+        if(j>=3){
+          break;
+        }
+
+        //data from firebase
+        var nameValue = category[categoryName][prodcutId].name;
+        var priceValue = category[categoryName][prodcutId].price;
+        var descriptionValue = category[categoryName][prodcutId].description;
+        var stockRemainingValue = category[categoryName][prodcutId].stockRemaining;
+        var imageUrlValue = category[categoryName][prodcutId].imageUrl;
+
+        let divCol = document.createElement("div");
+        divCol.className = "col-sm-6 col-lg-4";
+        
+        let divBox = document.createElement("div");
+        divBox.className = "box";
+
+        let divImgBox = document.createElement("div");
+        divImgBox.className = "img-box";
+
+        let img = document.createElement("img");
+        var storageRef = firebase.storage().ref(); 
+        storageRef.child('productCategory/'+categoryValue+ "/" + prodcutId + "/image0" + '.jpg').getDownloadURL().then(function(url) {
+          img.src = url;
+          img.alt = "";
+        });
+
+        categoryArray = ["Clothes", "Food", "Games", "Sports", "Technology"];
+        var categoryId;
+        for(var i=1; i<categoryArray.length+1; i++){
+          if(categoryValue == categoryArray[i-1]){
+            categoryId = i*100;
+            break;
+          }
+        }
+    
+        let aAdd = document.createElement("button");
+        aAdd.className = "add_cart_btn";
+        aAdd.textContent = "Add To Cart";
+        aAdd.setAttribute("onclick", "cartToFirebase("+categoryId+prodcutId.substring(2)+")");
+
+        // aAdd.append(spanAddCart)
+        divImgBox.append(img);
+        divImgBox.append(aAdd);
+
+        //modal
+        let divModalF = document.createElement("div");
+        divModalF.className = "modal fade";
+        divModalF.id = "myModal"+ i+""+ j;
+
+        let divModalD = document.createElement("div");
+        divModalD.className = "modal-dialog";
+
+        let divModalC = document.createElement("div");
+        divModalC.className = "modal-content";
+
+        let divModalH = document.createElement("div");
+        divModalH.className = "modal-header";
+
+        let btnModal = document.createElement("button");
+        btnModal.type = "button";
+        btnModal.className = "close";
+        btnModal.setAttribute('data-dismiss', "modal");
+        btnModal.innerHTML = "&times;";
+
+        let h4M = document.createElement("h4");
+        h4M.className = "modal-title";
+        h4M.textContent = nameValue;
+
+        divModalH.append(h4M);
+        divModalH.append(btnModal);
+
+        let divModalB = document.createElement("div");
+        divModalB.className = "modal-body";
+      
+        //get Picture icons for modal
+        let image = document.createElement("img"); 
+        storageRef.child('productCategory/'+categoryValue + "/" + prodcutId + "/image0" + '.jpg').getDownloadURL().then(function(url) {
+          image.src = url;
+          image.alt = "";
+        });
+        image.alt="Trulli";
+        image.width = "300";
+        image.height="300";
+
+        let pPrice = document.createElement("p");
+        pPrice.textContent = "Price: "+ "R" + priceValue;
+
+        let pDescription = document.createElement("p");
+        pDescription.textContent = "Descriptiom: "+descriptionValue;
+
+        let pStock = document.createElement("p");
+        pStock.textContent = "Stock remaining: "+stockRemainingValue;
+
+        let btnModalAdd = document.createElement("button");
+        btnModalAdd.setAttribute('data-dismiss', "modal");
+        btnModalAdd.innerHTML = "Add To Cart";
+
+        categoryArray = ["Clothes", "Food", "Games", "Sports", "Technology"];
+
+        var categoryId;
+        for(var i=1; i<categoryArray.length+1; i++){
+          if(categoryValue == categoryArray[i-1]){
+            categoryId = i*100;
+            break;
+          }
+        }
+
+        btnModalAdd.setAttribute("onclick", "cartToFirebase("+categoryId+prodcutId.substring(2)+")");
+
+        divModalB.append(image);
+        divModalB.append(pPrice);
+        divModalB.append(pDescription);
+        divModalB.append(pStock);
+        divModalB.append(btnModalAdd);
+
+        let divModalFooter = document.createElement("div");
+        divModalFooter.className = "modal-footer";
+
+        let btnDefault = document.createElement("button");
+        btnDefault.type = "button";
+        btnDefault.className = "btn btn-default";
+        btnDefault.setAttribute('data-dismiss', "modal");
+        btnDefault.textContent = "Close";
+
+        divModalFooter.append(btnDefault);
+
+        divModalC.append(divModalH);
+        divModalC.append(divModalB);
+        divModalC.append(divModalFooter);
+        divModalD.append(divModalC);
+        divModalF.append(divModalD);
+
+        let divDetailed = document.createElement("a");
+        divDetailed.className = "detail-box";
+        divDetailed.href = "";
+        
+        var s = "#myModal"+i+""+j;
+        //for modal
+        divDetailed.setAttribute('data-toggle', "modal");
+        divDetailed.setAttribute('data-target', s);
+
+        let h5Name = document.createElement("h5");
+        h5Name.textContent = nameValue;
+
+        divDetailed.append(h5Name);
+
+        let divInfo = document.createElement("div");
+        divInfo.className = "product-info";
+
+        let h5Span = document.createElement("h5");
+        
+        let spanAmount = document.createElement("span");
+        spanAmount.textContent = "R" + priceValue;
+
+        h5Span.append(spanAmount);
+
+        let divStar = document.createElement("div");
+        divStar.className = "star_container";
+
+        divInfo.append(h5Span);
+        divDetailed.append(divInfo);
+
+        divBox.append(divImgBox);
+        divBox.append(divDetailed)
+
+        divCol.append(divBox);
+        divCol.append(divModalF);  //modal
+        row.append(divCol);
+        j++;
+      }
+      //html
+      container.append(row);
+
+      let divBtn = document.createElement("div");
+      divBtn.className = "btn_box";
+
+      let aView = document.createElement("a");
+      var nextPage = "viewAll.html";
+      var str = "?category=" + categoryValue;
+      aView.href = nextPage + str;
+      aView.className = "view_more-link";
+      aView.textContent = "View All";
+      divBtn.append(aView);
+
+      container.append(divBtn);
+
+      i++;
+    }
+  });
+}
+
+function viewAllOnOpen(){
+  //firebase database ref
+  const dbRef = firebase.database().ref();
+  dbRef.child("prodcutCategory").once("value", function(data) {
+    var category = data.val();  //all prodcuts object
+
+    var categoryN = new URL(location.href).searchParams.get("category");
+    var categoryName = categoryN;
+    var categoryValue = categoryName;
+
+    //create html columns dynamically
+    let row = document.createElement("div");
+    row.className = "row";
+
+    const container = document.getElementById("container");
+
+    let prodcutCategoryH = document.createElement("div");
+    prodcutCategoryH.className = "heading_container heading_center";
+
+    let prodcutCategory = document.createElement("h2");
+    prodcutCategory.textContent = categoryValue;
+    prodcutCategoryH.append(prodcutCategory);
+
+    container.append(prodcutCategoryH);
+
+    var j = 0;
+    for(var prodcutId in category[categoryName]){
+        //data from firebase
+        var nameValue = category[categoryName][prodcutId].name;
+        var priceValue = category[categoryName][prodcutId].price;
+        var descriptionValue = category[categoryName][prodcutId].description;
+        var stockRemainingValue = category[categoryName][prodcutId].stockRemaining;
+        var imageUrlValue = category[categoryName][prodcutId].imageUrl;
+
+        let divCol = document.createElement("div");
+        divCol.className = "col-sm-6 col-lg-4";
+        
+        let divBox = document.createElement("div");
+        divBox.className = "box";
+
+        let divImgBox = document.createElement("div");
+        divImgBox.className = "img-box";
+
+        //get Picture icons
+        let img = document.createElement("img");
+        var storageRef = firebase.storage().ref(); 
+
+        storageRef.child('productCategory/'+categoryValue+ "/" + prodcutId + "/image0" + '.jpg').getDownloadURL().then(function(url) {
+            img.src = url;
+            img.alt = "";
+        });
+
+        categoryArray = ["Clothes", "Food", "Games", "Sports", "Technology"];
+
+        var categoryId;
+        for(var i=1; i<categoryArray.length+1; i++){
+          if(categoryValue == categoryArray[i-1]){
+            categoryId = i*100;
+            break;
+          }
+        }
+
+        let aAdd = document.createElement("button");
+        aAdd.className = "add_cart_btn";
+        aAdd.textContent = "Add To Cart";
+        aAdd.setAttribute("onclick", "cartToFirebase("+categoryId+prodcutId.substring(2)+")");
+
+        
+        divImgBox.append(img);
+        divImgBox.append(aAdd);
+
+        //modal
+        let divModalF = document.createElement("div");
+        divModalF.className = "modal fade";
+        divModalF.id = "myModal"+ j;
+
+        let divModalD = document.createElement("div");
+        divModalD.className = "modal-dialog";
+
+        let divModalC = document.createElement("div");
+        divModalC.className = "modal-content";
+
+        let divModalH = document.createElement("div");
+        divModalH.className = "modal-header";
+
+        let btnModal = document.createElement("button");
+        btnModal.type = "button";
+        btnModal.className = "close";
+        btnModal.setAttribute('data-dismiss', "modal");
+        btnModal.innerHTML = "&times;";
+
+        let h4M = document.createElement("h4");
+        h4M.className = "modal-title";
+        h4M.textContent = nameValue;
+
+        divModalH.append(h4M);
+        divModalH.append(btnModal);
+
+        let divModalB = document.createElement("div");
+        divModalB.className = "modal-body";
+        
+        //get Picture icons for modal
+        let image = document.createElement("img"); 
+        storageRef.child('productCategory/'+categoryValue+ "/" + prodcutId + "/image0" + '.jpg').getDownloadURL().then(function(url) { 
+            image.src = url;
+            image.alt = "";
+        });
+        image.alt="Trulli";
+        image.width = "300";
+        image.height="300";
+
+        let pPrice = document.createElement("p");
+        pPrice.textContent = "Price: " + "R" +priceValue;
+
+        let pDescription = document.createElement("p");
+        pDescription.textContent = "Descriptiom: "+descriptionValue;
+
+        let pStock = document.createElement("p");
+        pStock.textContent = "Stock remaining: "+stockRemainingValue;
+
+        let btnModalAdd = document.createElement("button");
+        btnModalAdd.setAttribute('data-dismiss', "modal");
+        btnModalAdd.innerHTML = "Add To Cart";
+        
+        categoryArray = ["Clothes", "Food", "Games", "Sports", "Technology"];
+
+        var categoryId;
+        for(var i=1; i<categoryArray.length+1; i++){
+          if(categoryValue == categoryArray[i-1]){
+            categoryId = i*100;
+            break;
+          }
+        }
+
+        btnModalAdd.setAttribute("onclick", "cartToFirebase("+categoryId+prodcutId.substring(2)+")");
+
+        divModalB.append(image);
+        divModalB.append(pPrice);
+        divModalB.append(pDescription);
+        divModalB.append(pStock);
+        divModalB.append(btnModalAdd);
+
+        let divModalFooter = document.createElement("div");
+        divModalFooter.className = "modal-footer";
+
+        let btnDefault = document.createElement("button");
+        btnDefault.type = "button";
+        btnDefault.className = "btn btn-default";
+        btnDefault.setAttribute('data-dismiss', "modal");
+        btnDefault.textContent = "Close";
+
+        divModalFooter.append(btnDefault);
+
+        divModalC.append(divModalH);
+        divModalC.append(divModalB);
+        divModalC.append(divModalFooter);
+        divModalD.append(divModalC);
+        divModalF.append(divModalD);
+
+        let divDetailed = document.createElement("a");
+        divDetailed.className = "detail-box";
+        divDetailed.href = "";
+        
+        var s = "#myModal"+j;
+        //for modal
+        divDetailed.setAttribute('data-toggle', "modal");
+        divDetailed.setAttribute('data-target', s);
+
+        let h5Name = document.createElement("h5");
+        h5Name.textContent = nameValue;
+
+        divDetailed.append(h5Name);
+
+        let divInfo = document.createElement("div");
+        divInfo.className = "product-info";
+
+        let h5Span = document.createElement("h5");
+        
+        let spanAmount = document.createElement("span");
+        spanAmount.textContent = "R" + priceValue;
+
+        h5Span.append(spanAmount);
+
+        let divStar = document.createElement("div");
+        divStar.className = "star_container";
+
+        divInfo.append(h5Span);
+        divDetailed.append(divInfo);
+
+        divBox.append(divImgBox);
+        divBox.append(divDetailed)
+
+        divCol.append(divBox);
+        divCol.append(divModalF);  //modal
+        row.append(divCol);
+        j++;
+    }
+    //html
+    container.append(row);
+  });
+}
+
+function cartOnOpen(){
+  //firebase database ref
+  var storageRef = firebase.storage().ref(); 
+  firebase.auth().onAuthStateChanged(function(user){
+    var userUid = user.uid;
+
+    const dbRef = firebase.database().ref();
+    dbRef.on('value', function(datasnapshot){
+      dbRef.child("users").child(userUid).child("cart").once("value", function(data) {
+        var cartObject = data.val();  //all prodcuts object
+        const shopping_cart = document.getElementById("shopping_cart");
+        for(var cartId in cartObject){
+          if(cartId == "addressDetails" || cartId == "totalCartPrice"){
+            continue;
+          }
+          var category = cartObject[cartId].category;
+          var productId = cartObject[cartId].productId;
+          var quantity = cartObject[cartId].quantity;
+
+          //get product Details
+          dbRef.child("prodcutCategory").child(category).child(productId).once("value", function(data) {
+            var productObject = data.val();  //all prodcuts object
+            var description = productObject.description;
+            var imageUrl = productObject.imageUrl;
+            var name = productObject.name;
+            var price = productObject.price;
+            
+            let divProduct = document.createElement("div");
+            divProduct.className = "product";
+
+            let divProduct_image = document.createElement("div");
+            divProduct_image.className = "product-image";
+
+            let img = document.createElement("img");
+            storageRef.child('productCategory/'+category+"/"+productId+ "/image0" + '.jpg').getDownloadURL().then(function(url) {
+              img.src = url;
+            });
+
+            divProduct_image.append(img);
+            divProduct.append(divProduct_image);
+
+            let divProductDetails = document.createElement("div");
+            divProductDetails.className = "product-details";
+
+            let divProductTitle = document.createElement("div");
+            divProductTitle.className = "product-title";
+            divProductTitle.textContent = name;
+
+            let pProductDescription = document.createElement("p");
+            pProductDescription.className = "product-description";
+            pProductDescription.textContent = description;
+
+            divProductDetails.append(divProductTitle);
+            divProductDetails.append(pProductDescription);
+            divProduct.append(divProductDetails);
+
+            let divProductPrice = document.createElement("div");
+            divProductPrice.className = "product-price";
+            divProductPrice.textContent = price;
+
+            let divProductQuantity = document.createElement("div");
+            divProductQuantity.className = "product-quantity";
+
+            var cartId = category+"_" + productId;
+
+            let inputNumber = document.createElement("input");
+            inputNumber.type = "number"
+            inputNumber.value = quantity;
+            inputNumber.min = 1;
+            inputNumber.id = cartId;
+
+            inputNumber.setAttribute('onchange', 'updateQuantity("'+userUid+'#'+cartId+'")');  //amazing!!!!!!!!!
+
+            divProductQuantity.append(inputNumber);
+            divProduct.append(divProductPrice);
+            divProduct.append(divProductQuantity);
+
+            let divProductRemoval = document.createElement("div");
+            divProductRemoval.className = "product-removal";
+
+            var cartId = category+"_" + productId;
+
+            let btnRemoveProduct = document.createElement("button");
+            btnRemoveProduct.className = "remove-product";
+            btnRemoveProduct.textContent = "Remove";
+            btnRemoveProduct.setAttribute('onclick', 'removeProduct("'+userUid+'#'+cartId+'")');  //amazing!!!!!!!!!
+
+            divProductRemoval.append(btnRemoveProduct);
+            divProduct.append(divProductRemoval);
+            shopping_cart.append(divProduct);
+          });
+        }
+      });
+    });
+  });
+  let btnCheckout = document.createElement("button");
+  btnCheckout.className = "checkout";
+  btnCheckout.textContent = "Checkout";
+  btnCheckout.setAttribute('onclick', 'checkout()');  //amazing!!!!!!!!!
+  shopping_cart.append(btnCheckout);
+}
+
+function orderHistoryOnOpen(){
+   //firebase database ref
+   var storageRef = firebase.storage().ref(); 
+  
+   firebase.auth().onAuthStateChanged(function(user){
+       var userUid = user.uid;
+       const dbRef = firebase.database().ref();
+       dbRef.on('value', function(datasnapshot){
+           var orderHistoryObject;
+           dbRef.child("users").child(userUid).child("orderHistory").once("value", function(data) {
+               orderHistoryObject = data.val(); 
+           });
+           var productCategoryObject;
+           dbRef.child("prodcutCategory").once("value", function(data) {
+               productCategoryObject = data.val(); 
+           });
+           const shopping_cart = document.getElementById("shopping_cart");
+           var cart_no = 0;
+           for(var orderHistoryId in orderHistoryObject){
+               cart_no ++;
+               let divCartTitle = document.createElement("h2");
+               divCartTitle.textContent = "Order " + cart_no;
+               shopping_cart.append(divCartTitle);
+               for (var categoryId in orderHistoryObject[orderHistoryId]){
+                   if (categoryId == "totalCartPrice"){
+                       var total_cart_price = orderHistoryObject[orderHistoryId][categoryId];
+                   }
+                   else if (categoryId == "addressDetails"){
+                     var city = orderHistoryObject[orderHistoryId][categoryId].city;
+                     var postal_code = orderHistoryObject[orderHistoryId][categoryId].postalCode;
+                     var province = orderHistoryObject[orderHistoryId][categoryId].province;
+                     var street_address = orderHistoryObject[orderHistoryId][categoryId].streetAddress;
+                     var suburb = orderHistoryObject[orderHistoryId][categoryId].suburb;
+                   }
+                   else if (categoryId != "totalCartPrice" && categoryId != "addressDetails" ){
+                       var category = orderHistoryObject[orderHistoryId][categoryId].category;
+                       var product_id = orderHistoryObject[orderHistoryId][categoryId].productId;
+                       var quantity = orderHistoryObject[orderHistoryId][categoryId].quantity;
+                       var total_products_price = orderHistoryObject[orderHistoryId][categoryId].totalPrice;
+                       var image_url = productCategoryObject[category][product_id].imageUrl;
+                       var name = productCategoryObject[category][product_id].name;
+                       var price = productCategoryObject[category][product_id].price;
+                       var description = productCategoryObject[category][product_id].description;
+
+                       let divProduct = document.createElement("div");
+                       divProduct.className = "product";
+
+                       let divProduct_image = document.createElement("div");
+                       divProduct_image.className = "product-image";
+
+                       let img = document.createElement("img");
+                       storageRef.child('productCategory/'+category+"/"+product_id+ "/image0" + '.jpg').getDownloadURL().then(function(url) {
+                           img.src = url;
+                       });
+
+                       divProduct_image.append(img);
+                       divProduct.append(divProduct_image);
+
+                       let divProductDetails = document.createElement("div");
+                       divProductDetails.className = "product-details";
+
+                       let divProductTitle = document.createElement("div");
+                       divProductTitle.className = "product-title";
+                       divProductTitle.textContent = name;
+
+                       divProductDetails.append(divProductTitle);
+                       divProduct.append(divProductDetails);
+
+                       let divProductPrice = document.createElement("div");
+                       divProductPrice.className = "product-price";
+                       divProductPrice.textContent = price;
+
+                       let divProductQuantity = document.createElement("div");
+                       divProductQuantity.className = "product-quantity";
+                       divProductQuantity.textContent = quantity;
+
+                       let divTotalProductPrice = document.createElement("div");
+                       divTotalProductPrice.className = "product-total";
+                       divTotalProductPrice.textContent = "R" + total_products_price;
+
+                       divProduct.append(divProductPrice);
+                       divProduct.append(divProductQuantity);
+                       divProduct.append(divTotalProductPrice);
+
+                       shopping_cart.append(divProduct);
+                   }
+               }
+               let divCartSummary = document.createElement("h2");
+               divCartSummary.textContent = "Order " + cart_no + " Summary";
+               shopping_cart.append(divCartSummary);
+
+               let divNewLine = document.createElement("br");
+               let divDashes = document.createElement("hr");
+
+               let divTotalCartPrice = document.createElement("h5");
+               divTotalCartPrice.textContent = "Total price paid for this order:";
+               shopping_cart.append(divTotalCartPrice);
+
+               let divTotalCartPriceValue = document.createElement("h4");
+               divTotalCartPriceValue.textContent = "R" + total_cart_price;
+               shopping_cart.append(divTotalCartPriceValue);
+
+               shopping_cart.append(divNewLine);
+
+               let divAddress = document.createElement("h5");
+               divAddress.textContent = "These items were delivered to:";
+               shopping_cart.append(divAddress);
+
+               let divAddressValue = document.createElement("h4");
+               divAddressValue.textContent = street_address +", "+ suburb +", "+ city +", "+ province +", "+ postal_code;
+               shopping_cart.append(divAddressValue);
+
+               shopping_cart.append(divDashes);
+
+               for (var c=0; c<5; c++){
+                   let divSpace = document.createElement("br");
+                   shopping_cart.append(divSpace);
+               }
+           }
+       });
+   });
+}
+
 function print(message){
   if (typeof window !== 'undefined') {
     window.alert(message)
@@ -510,6 +1178,9 @@ if (typeof module !== 'undefined' && module.exports) {
        removeProduct,
        updateQuantity,
        checkoutOpen,
+       confirmYourOrder,
+       isEmpty,
      };
   }
+  
   
