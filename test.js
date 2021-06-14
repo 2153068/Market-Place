@@ -11,6 +11,7 @@ if (typeof module !== 'undefined' && module.exports) { // check we're server-sid
   var cartToFirebase = methods.cartToFirebase;
   var removeProduct = methods.removeProduct;
   var updateQuantity = methods.updateQuantity;
+  var checkoutOpen = methods.checkoutOpen;
 }
 
 //sprint 1 
@@ -162,13 +163,13 @@ var email = "shlomo@brill.com";
 var password = "123456";
 
 //teting cartToFirebase 
-// QUnit.test( 'cartToFirebase() should return "Product has been added to your cart"', assert => {
-//   return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
-//       return cartToFirebase("1001").then( result => {
-//         assert.equal( result, "Product has been added to your cart");
-//       });
-//   })
-// });
+QUnit.test( 'cartToFirebase() should return "Product has been added to your cart"', assert => {
+  return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
+      return cartToFirebase("1001").then( result => {
+        assert.equal( result, "Product has been added to your cart");
+      });
+  })
+});
 
 //teting removeProduct function
 QUnit.test( 'removeProduct() should return "Success"', assert => {
@@ -192,16 +193,29 @@ QUnit.test( 'updateQuantity() should return "Success"', assert => {
   })
 });
 
+//teting checkoutOpen function
+QUnit.test( 'checkoutOpen() should return "?"', assert => {
+  return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
+      return cartToFirebase("1001").then( result => {
+        return updateQuantity("4Xi1q4hZ7RQYLPZZhckcP9X29Lg2#Clothes_id1",50).then( result => {
+          return checkoutOpen().then( result => {
+            assert.equal( result, "?");
+          });        
+          // assert.equal( result, "?");
+        });
+      });
+  })
+});
 
-//testing randomEmailGenerator function 
+
+// testing randomEmailGenerator function 
 QUnit.test( 'generateRandomEmail(5) testing ', assert => {
     result = genrateRandomEmail(5).length;
     assert.equal( result, 15);
-
 });
 
 randEmail = genrateRandomEmail(5);
-//All details are valid
+// All Registration details are valid
 QUnit.test( 'register("first name","last name","17-22-2000","'+randEmail+'","123456","123456", true) should return "Success"', assert => {
   return register("first name","last name","17-22-2000",randEmail,"123456","123456", true).then( result => {
     assert.equal( result, "Success");
