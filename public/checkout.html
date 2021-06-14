@@ -181,9 +181,6 @@
   <div class='col-md-4'></div>
 </div>
 
-
-
-<!-- partial:index.partial.html -->
     <!-- partial -->
     <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script><script  src="./cart.js"></script>
 
@@ -193,7 +190,6 @@
     <script src="js/bootstrap.js"></script>
     <!-- custom js -->
     <script src="js/custom.js"></script>
-
 
     <script src="index.js"></script> 
     <script>
@@ -205,17 +201,7 @@
         else{
           init();
           checkoutOpen();
-          checkoutDelevery();
-
-          // dbRef.child("users").child(user.uid).child("cart").child("totalCartPrice").once("value", function(cartData) {
-          //   var cart_total = "R"+cartData.val();  
-            
-          //   document.getElementById("totalPrice").innerHTML = cart_total;
-
-          //   // document.getElementById("totalPrice").innerHTML = cart_total;
-          //   // cart_total = "R500";
-          //   // document.getElementById("totalPrice").innerHTML = cart_total;
-          // });          
+          checkoutDelevery();         
         }
       });
   </script>

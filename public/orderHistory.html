@@ -108,8 +108,6 @@
         </div>
     </header>
 
-
-
 <!-- partial:index.partial.html -->
 <h1 style="padding: 0px 30px 30px 20px;">Order History </h1>
 
@@ -121,150 +119,11 @@
     <label class="product-price">Price</label>
     <label class="product-quantity">Quantity</label>
     <label class="product-total">Total</label>
-    <!-- <label class="product-line-price">Total</label> -->
   </div>
-
-  <script>
-
-    //firebase database ref
-    var storageRef = firebase.storage().ref(); 
-    
-    firebase.auth().onAuthStateChanged(function(user){
-        var userUid = user.uid;
-        // var orderHistoryObject;
-        const dbRef = firebase.database().ref();
-        dbRef.on('value', function(datasnapshot){
-            var orderHistoryObject;
-            dbRef.child("users").child(userUid).child("orderHistory").once("value", function(data) {
-                orderHistoryObject = data.val(); 
-                // window.alert(orderHistoryObject);
-            });
-            var productCategoryObject;
-            dbRef.child("prodcutCategory").once("value", function(data) {
-                productCategoryObject = data.val(); 
-                // window.alert(orderHistoryObject);
-            });
-            // console.log(productCategoryObject);
-            // window.alert(orderHistoryObject);
-        
-            const shopping_cart = document.getElementById("shopping_cart");
-            var cart_no = 0;
-            for(var orderHistoryId in orderHistoryObject){
-                cart_no ++;
-                let divCartTitle = document.createElement("h2");
-                divCartTitle.textContent = "Order " + cart_no;
-                shopping_cart.append(divCartTitle);
-                for (var categoryId in orderHistoryObject[orderHistoryId]){
-                    if (categoryId == "totalCartPrice"){
-                        // console.log(true);
-                        var total_cart_price = orderHistoryObject[orderHistoryId][categoryId];
-                    }
-                    else if (categoryId == "addressDetails"){
-                      var city = orderHistoryObject[orderHistoryId][categoryId].city;
-                      var postal_code = orderHistoryObject[orderHistoryId][categoryId].postalCode;
-                      var province = orderHistoryObject[orderHistoryId][categoryId].province;
-                      var street_address = orderHistoryObject[orderHistoryId][categoryId].streetAddress;
-                      var suburb = orderHistoryObject[orderHistoryId][categoryId].suburb;
-                    }
-                    else if (categoryId != "totalCartPrice" && categoryId != "addressDetails" ){
-                        var category = orderHistoryObject[orderHistoryId][categoryId].category;
-                        var product_id = orderHistoryObject[orderHistoryId][categoryId].productId;
-                        var quantity = orderHistoryObject[orderHistoryId][categoryId].quantity;
-                        var total_products_price = orderHistoryObject[orderHistoryId][categoryId].totalPrice;
-                        var image_url = productCategoryObject[category][product_id].imageUrl;
-                        var name = productCategoryObject[category][product_id].name;
-                        var price = productCategoryObject[category][product_id].price;
-                        var description = productCategoryObject[category][product_id].description;
-
-                        let divProduct = document.createElement("div");
-                        divProduct.className = "product";
-
-                        let divProduct_image = document.createElement("div");
-                        divProduct_image.className = "product-image";
-
-                        let img = document.createElement("img");
-                        storageRef.child('productCategory/'+category+"/"+product_id+ "/image0" + '.jpg').getDownloadURL().then(function(url) {
-                            img.src = url;
-                        });
-
-                        divProduct_image.append(img);
-                        divProduct.append(divProduct_image);
-
-                        let divProductDetails = document.createElement("div");
-                        divProductDetails.className = "product-details";
-
-                        let divProductTitle = document.createElement("div");
-                        divProductTitle.className = "product-title";
-                        divProductTitle.textContent = name;
-
-                        // let pProductDescription = document.createElement("p");
-                        // pProductDescription.className = "product-description";
-                        // pProductDescription.textContent = description;
-
-                        divProductDetails.append(divProductTitle);
-                        // divProductDetails.append(pProductDescription);
-                        divProduct.append(divProductDetails);
-
-                        let divProductPrice = document.createElement("div");
-                        divProductPrice.className = "product-price";
-                        divProductPrice.textContent = price;
-
-                        let divProductQuantity = document.createElement("div");
-                        divProductQuantity.className = "product-quantity";
-                        divProductQuantity.textContent = quantity;
-
-                        let divTotalProductPrice = document.createElement("div");
-                        divTotalProductPrice.className = "product-total";
-                        divTotalProductPrice.textContent = "R" + total_products_price;
-
-                        divProduct.append(divProductPrice);
-                        divProduct.append(divProductQuantity);
-                        divProduct.append(divTotalProductPrice);
-
-                        shopping_cart.append(divProduct);
-                    }
-                }
-                let divCartSummary = document.createElement("h2");
-                divCartSummary.textContent = "Order " + cart_no + " Summary";
-                shopping_cart.append(divCartSummary);
-
-                let divNewLine = document.createElement("br");
-                let divDashes = document.createElement("hr");
-
-                let divTotalCartPrice = document.createElement("h5");
-                divTotalCartPrice.textContent = "Total price paid for this order:";
-                shopping_cart.append(divTotalCartPrice);
-
-                let divTotalCartPriceValue = document.createElement("h4");
-                divTotalCartPriceValue.textContent = "R" + total_cart_price;
-                shopping_cart.append(divTotalCartPriceValue);
-
-                shopping_cart.append(divNewLine);
-
-                let divAddress = document.createElement("h5");
-                divAddress.textContent = "These items were delivered to:";
-                shopping_cart.append(divAddress);
-
-                let divAddressValue = document.createElement("h4");
-                divAddressValue.textContent = street_address +", "+ suburb +", "+ city +", "+ province +", "+ postal_code;
-                shopping_cart.append(divAddressValue);
-
-                shopping_cart.append(divDashes);
-
-                for (var c=0; c<5; c++){
-                    let divSpace = document.createElement("br");
-                    // divSpace.textContent = "-";
-                    shopping_cart.append(divSpace);
-                }
-            }
-        });
-    });
-
-  </script>
 
 </div>
     <!-- partial -->
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script><script  src="./cart.js"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script><script  src="./index.js"></script>
 
     <!-- jQery -->
     <script src="js/jquery-3.4.1.min.js"></script>
@@ -283,6 +142,7 @@
         }
         else{
           init();
+          orderHistoryOnOpen();
         }
       });
   </script>

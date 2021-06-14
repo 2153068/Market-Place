@@ -16,48 +16,48 @@ if (typeof module !== 'undefined' && module.exports) { // check we're server-sid
   var isEmpty = methods.isEmpty;
 }
 
+var existingEmail = "shlomo@gmail.com";
 //sprint 1 
-
 //Registration acceptance criteria
 
 //first password is not given but all other inputs are valid
 QUnit.test( 'register("first name","last name","17-22-2000","shlomo@brill.com","","123456") should return "Enter both password"', assert => {
-  return register("abc","xyz","17-22-2000","shlomo@brill.com","","123456").then( result => {
+  return register("abc","xyz","17-22-2000",existingEmail,"","123456").then( result => {
     assert.equal( result, "Enter both passwords");
   });
 });
 
 //second password is not given but all other inputs are valid
 QUnit.test( 'register("first name","last name","17-22-2000","shlomo@brill.com","123456","") should return "Enter both password"', assert => {
-  return register("abc","xyz","17-22-2000","shlomo@brill.com","123456","").then( result => {
+  return register("abc","xyz","17-22-2000",existingEmail,"123456","").then( result => {
     assert.equal( result, "Enter both passwords");
   });
 });
 
 //all valid details are given but passwords do not match
 QUnit.test( 'register("first name","last name","17-22-2000","shlomo@brill.com","123456","123455") should return "Passwords do not match. Please try again."', assert => {
-  return register("first name","last name","17-22-2000","shlomo@brill.com","123456","123455").then( result => {
+  return register("first name","last name","17-22-2000",existingEmail,"123456","123455").then( result => {
     assert.equal( result, "Passwords do not match. Please try again.");
   });
 });
 
 //first name is not given but all other inputs are valid
 QUnit.test( 'register("","last name","17-22-2000","shlomo@brill.com","123456","123456") should return "Ensure all fields are filled"', assert => {
-  return register("","last name","17-22-2000","shlomo@brill.com","123456","123456").then( result => {
+  return register("","last name","17-22-2000",existingEmail,"123456","123456").then( result => {
     assert.equal( result, "Ensure all fields are filled");
   });
 });
 
 //last name is not given but all other inputs are valid
 QUnit.test( 'register("first name","","17-22-2000","shlomo@brill.com","123456","123456") should return "Ensure all fields are filled"', assert => {
-  return register("first name","","17-22-2000","shlomo@brill.com","123456","123456").then( result => {
+  return register("first name","","17-22-2000",existingEmail,"123456","123456").then( result => {
     assert.equal( result, "Ensure all fields are filled");
   });
 });
 
 //date is not given but all other inputs are valid
 QUnit.test( 'register("first name","last name","","shlomo@brill.com","123456","123456") should return "Ensure all fields are filled"', assert => {
-  return register("first name","last name","","shlomo@brill.com","123456","123456").then( result => {
+  return register("first name","last name","",existingEmail,"123456","123456").then( result => {
     assert.equal( result, "Ensure all fields are filled");
   });
 });
@@ -71,14 +71,14 @@ QUnit.test( 'register("first name","last name","17-22-2000","","123456","123456"
 
 //password length is less than 6 but all other inputs are valid
 QUnit.test( 'register("first name","last name","17-22-2000","shlomo@brill.com","12345","12345") should return "Password should be at least 6 characters"', assert => {
-  return register("first name","last name","17-22-2000","shlomo@brill.com","12345","12345").then( result => {
+  return register("first name","last name","17-22-2000",existingEmail,"12345","12345").then( result => {
     assert.equal( result, "Password should be at least 6 characters");
   });
 });
 
 //invalid email but all other inputs are valid
 QUnit.test( 'register("first name","last name","17-22-2000","shlomogmail.co.za","123456","123456") should return "The email address is badly formatted."', assert => {
-  return register("first name","last name","17-22-2000","shlomogmail.co.za","123456","123456").then( result => {
+  return register("first name","last name","17-22-2000",existingEmail,"123456","123456").then( result => {
     assert.equal( result, "The email address is badly formatted.");
   });
 });
