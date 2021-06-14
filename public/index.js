@@ -35,7 +35,7 @@ function register(fName, lName, dob, email, password, cPassword, exit){
               };
               usersRef.set(userData, function(error){     
                 if(error){
-                  console.log("error mes "+error.message)
+                  // console.log("error mes "+error.message)
                   if (isWebsite()) {
                     window.alert("Message : " + error.message);
                   }
@@ -209,6 +209,7 @@ function checkout(){
 
 function checkoutOpen(){
   return new Promise( resolve => {
+    var success = false; 
     //update price
     firebase.auth().onAuthStateChanged(function(user){
       var userUid = user.uid;
@@ -216,21 +217,23 @@ function checkoutOpen(){
       dbRef.on('value', function(datasnapshot){
         dbRef.child("users").child(userUid).child("cart").once("value", function(data) {
           var cartObject = data.val();  //all prodcuts object
-          console.log("Cart obj"+ cartObject)
+          // console.log("Cart obj"+ cartObject)
           for(var categoryId in cartObject){//////////////////////////////////////////////compare code with Moshe
             if(categoryId != "totalCartPrice"){
-              window.alert("Category id: "+ categoryId)
               var category = cartObject[categoryId].category;
               var productId = cartObject[categoryId].productId
               var quantity = cartObject[categoryId].quantity;
               // window.alert(categoryId)
               // window.alert(category)
-              console.log("testing: " + category +" "+
-              productId +" "+ quantity)
-
               dbRef.child("prodcutCategory").child(category).child(productId).once("value", function(data) {
                 var price = data.val().price;
-                dbRef.child("users").child(userUid).child("cart").child(categoryId).child("totalPrice").set(price*quantity);
+                dbRef.child("users").child(userUid).child("cart").child(categoryId).child("totalPrice").set(price*quantity, function(error){
+                  if (!error){
+                    success = true; 
+                  }else{
+                    success = false; 
+                  }
+                });
               });
             }
           }
@@ -256,13 +259,26 @@ function checkoutOpen(){
           }
         }
         // window.alert(totalCartPrice);
-        dbRef.child("users").child(userUid).child("cart").child("totalCartPrice").set(totalCartPrice);
+        dbRef.child("users").child(userUid).child("cart").child("totalCartPrice").set(totalCartPrice, function(error){
+          if (error){
+            success = false; 
+            resolve(success)
+          }else{
+            if (success){
+              success = true; 
+              resolve(success)
+            }else{
+              success = false; 
+              resolve(success)
+            }
+            
+          }
+        });
         if (isWebsite()){
           document.getElementById("totalPrice").innerHTML = "R"+totalCartPrice;
         }
       });
     });
-    resolve("?")
   });
 }
 

@@ -78,14 +78,7 @@ QUnit.test( 'register("first name","last name","17-22-2000","shlomo@brill.com","
 
 //invalid email but all other inputs are valid
 QUnit.test( 'register("first name","last name","17-22-2000","shlomogmail.co.za","123456","123456") should return "The email address is badly formatted."', assert => {
-  return register("first name","last name","17-22-2000",existingEmail,"123456","123456").then( result => {
-    assert.equal( result, "The email address is badly formatted.");
-  });
-});
-
-//invalid email but all other inputs are valid
-QUnit.test( 'register("first name","last name","17-22-2000","shlomogmail.co.za","123456","123456") should return "The email address is badly formatted."', assert => {
-  return register("first name","last name","17-22-2000","shlomogmail.co.za","123456","123456").then( result => {
+  return register("first name","last name","17-22-2000","jngmail.com","123456","123456").then( result => {
     assert.equal( result, "The email address is badly formatted.");
   });
 });
@@ -104,14 +97,14 @@ QUnit.test( 'login("", "123456") should return The email address is badly format
 
 // login - valid email given and password not given 
 QUnit.test( 'login("shlomo@brill.com", "") should return "The password is invalid or the user does not have a password."', assert => {
-  return login("shlomo@brill.com", "").then( result => {
+  return login(existingEmail, "").then( result => {
     assert.equal( result, "The password is invalid or the user does not have a password.");
   });
 });
 
-// login - email and password given but are password not valid
+// login - email and password given but password not valid
 QUnit.test( 'login("shlomo@brill.com", "123") should return "The password is invalid or the user does not have a password."', assert => {
-  return login("shlomo@brill.com", "123").then( result => {
+  return login(existingEmail, "123").then( result => {
     assert.equal( result, "The password is invalid or the user does not have a password.");
   });
 });
@@ -132,7 +125,7 @@ QUnit.test( 'login("shlomhjgobrill.com", "123456") should return "The email addr
 
 // login - successful login
 QUnit.test( 'login("shlomo@brill.com", "123") should return "The password is invalid or the user does not have a password."', assert => {
-  return login("shlomo@brill.com", "123456").then( result => {
+  return login(existingEmail, "123456").then( result => {
     assert.equal( result, "success");
   });
 });
@@ -161,7 +154,7 @@ test('getCategoryAndProductId(20010) should return ["Food",10]', function(assert
 });
 
 var firebase = require('firebase');
-var email = "shlomo@brill.com";
+var email = existingEmail;
 var password = "123456";
 
 //teting cartToFirebase 
@@ -184,7 +177,7 @@ QUnit.test( 'removeProduct() should return "Success"', assert => {
   })
 });
 
-//teting updateQuantity function
+//testing updateQuantity function
 QUnit.test( 'updateQuantity() should return "Success"', assert => {
   return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
       return cartToFirebase("1001").then( result => {
@@ -195,19 +188,18 @@ QUnit.test( 'updateQuantity() should return "Success"', assert => {
   })
 });
 
-//teting checkoutOpen function - working as it stands but need to chck if the function is the correct code
-// QUnit.test( 'checkoutOpen() should return "?"', assert => {
-//   return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
-//       return cartToFirebase("1001").then( result => {
-//         return updateQuantity("4Xi1q4hZ7RQYLPZZhckcP9X29Lg2#Clothes_id1",50).then( result => {
-//           return checkoutOpen().then( result => {
-//             assert.equal( result, "?");
-//           });        
-//           // assert.equal( result, "?");
-//         });
-//       });
-//   })
-// });
+// teting checkoutOpen function - working as it stands but need to chck if the function is the correct code
+QUnit.test( 'checkoutOpen() should return "?"', assert => {
+  return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
+      return cartToFirebase("1001").then( result => {
+        return updateQuantity("4Xi1q4hZ7RQYLPZZhckcP9X29Lg2#Clothes_id1",50).then( result => {
+          return checkoutOpen().then( result => {
+            assert.equal( result, true);
+          });        
+        });
+      });
+  })
+});
 
 // //teting confirmYourOrder function
 // QUnit.test( 'confirmYourOrder() should return "?"', assert => {
@@ -242,7 +234,7 @@ QUnit.test( 'generateRandomEmail(5) testing ', assert => {
 });
 
 randEmail = genrateRandomEmail(5);
-// All Registration details are valid
+// All Registration details are valid with random email created
 QUnit.test( 'register("first name","last name","17-22-2000","'+randEmail+'","123456","123456", true) should return "Success"', assert => {
   return register("first name","last name","17-22-2000",randEmail,"123456","123456", true).then( result => {
     assert.equal( result, "Success");
