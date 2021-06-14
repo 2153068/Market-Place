@@ -186,7 +186,7 @@ function updateQuantity(userUidAndCartId, quantity){ //seperated by #
       quantityInput = document.getElementById(categoryProductId).value;
     }else{
       quantityInput = quantity; 
-      console.log("quantity is "+quantity)
+      // console.log("quantity is "+quantity)
     }
     // window.alert(categoryProductId)
     const rootRef = firebase.database().ref();
@@ -217,14 +217,12 @@ function checkoutOpen(){
       dbRef.on('value', function(datasnapshot){
         dbRef.child("users").child(userUid).child("cart").once("value", function(data) {
           var cartObject = data.val();  //all prodcuts object
-          // console.log("Cart obj"+ cartObject)
           for(var categoryId in cartObject){//////////////////////////////////////////////compare code with Moshe
-            if(categoryId != "totalCartPrice"){
+            if(categoryId != "totalCartPrice" && categoryId != "addressDetails"){
               var category = cartObject[categoryId].category;
               var productId = cartObject[categoryId].productId
               var quantity = cartObject[categoryId].quantity;
-              // window.alert(categoryId)
-              // window.alert(category)
+              // console.log(category+" " +productId+" "+quantity)
               dbRef.child("prodcutCategory").child(category).child(productId).once("value", function(data) {
                 var price = data.val().price;
                 dbRef.child("users").child(userUid).child("cart").child(categoryId).child("totalPrice").set(price*quantity, function(error){
@@ -240,7 +238,6 @@ function checkoutOpen(){
         });
       });
     });
-
     firebase.auth().onAuthStateChanged(function(user){
       var userUid = user.uid; 
       const dbRef = firebase.database().ref();
@@ -279,6 +276,7 @@ function checkoutOpen(){
         }
       });
     });
+    resolve("?")
   });
 }
 
