@@ -14,7 +14,7 @@ if (typeof module !== 'undefined' && module.exports) { // check we're server-sid
   var confirmYourOrder = methods.confirmYourOrder;
   var checkoutOpen = methods.checkoutOpen;
   var isEmpty = methods.isEmpty;
-  var indexOnOpen = methods.indexOnOpen;
+  // var indexOnOpen = methods.indexOnOpen;
 }
 
 var existingEmail = "shlomo@gmail.com";
@@ -255,22 +255,10 @@ QUnit.test( 'confirmYourOrder("street","suburb","city","province","2125") should
   })
 });
 
-// // testing isEmpty function when array is not empty 
-// QUnit.test( 'isEmpty([1,2,3]) testing, should return false', assert => {
-//   result = isEmpty([1,2,3]);
-//   assert.equal( result, false);
-// });
-
-// // testing isEmpty function when array is not empty 
-// QUnit.test( 'isEmpty([]) testing should return true', assert => {
-//   result = isEmpty([]);
-//   assert.equal( result, true);
-// });
-
-// testing randomEmailGenerator function 
-QUnit.test( 'generateRandomEmail(5) testing ', assert => {
-    result = genrateRandomEmail(5).length;
-    assert.equal( result, 15);
+// testing isEmpty function when array is not empty 
+QUnit.test( 'isEmpty([1,2,3]) testing, should return false', assert => {
+  result = isEmpty([1,2,3]);
+  assert.equal( result, false);
 });
 
 randEmail = genrateRandomEmail(5);
