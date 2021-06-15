@@ -276,14 +276,14 @@ function checkoutOpen(){
         }
       });
     });
-    resolve("?")
   });
 }
 
 //called when Confirm Your Order is clicked on
-function confirmYourOrder(){
+function confirmYourOrder(streetAddress, suburb, city, province, postalCode){
     return new Promise( resolve => {
       firebase.auth().onAuthStateChanged(function(user){
+        console.log("testing 1..")
         var difference;
         var userUid = user.uid;
         const dbRef = firebase.database().ref();
@@ -292,25 +292,48 @@ function confirmYourOrder(){
           var available_money = userObject["details"].availableMoney;
           var total_cart_price = userObject["cart"].totalCartPrice;
           difference = available_money - total_cart_price;
+          console.log(available_money +" "+total_cart_price)
+          // window.alert((available_money +" "+total_cart_price))
           if (difference >= 0){
-            if(address()){  //not empty
-              updateInFirebase(difference);
-              updateOrderHistoryFirebase();
+            //streetAddressI, suburbI, cityI, provinceI, postalCodeI
+            if(address(streetAddress, suburb, city, province, postalCode)){  //not empty
+                      
+              dbRef.on('value', function(datasnapshot){
+                dbRef.child("users").child(userUid).child("details").child("availableMoney").set(difference, function(error){
+                  if (!error){
+                    updateOrderHistoryFirebase();  
+                  }
+                });
+                // console.log("testing..")
+                });
+             
+              
+              
+              
+              var message = print("Your Order Is Confirmed!");
+              resolve(message);
               if (isWebsite()){
-                window.alert("Your Order Is Confirmed!");
                 window.location.href = "index.html";
               }
-            
-            }
+              // var userUid = user.uid;
+              // const dbRef = firebase.database().ref();
+              // dbRef.on('value', function(datasnapshot){
+              // dbRef.child("users").child(userUid).child("details").child("availableMoney").set(difference);
+              //   // console.log("testing..")
+              // });
+              // // updateInFirebase(difference);
+              // updateOrderHistoryFirebase();              
+              }else{
+                resolve("?");
+              }
           }
           else { // if user does not have enough funds to complete order
-            if (isWebsite()){
-              window.alert("You do not have enough funds to complete this order");
-            }
+            var message = print("You do not have enough funds to complete this order")
+            resolve(message);            
           }
         });
       });
-      resolve("?")
+      // resolve("?")
   });
 }
 
@@ -320,6 +343,7 @@ function updateInFirebase(difference){
     const dbRef = firebase.database().ref();
     dbRef.on('value', function(datasnapshot){
       dbRef.child("users").child(userUid).child("details").child("availableMoney").set(difference);
+      // console.log("testing..")
     });
   });
 }
@@ -455,7 +479,9 @@ function updateOrderHistoryFirebase(){
     var new_date = Date.now();
     var date_id = "id_" + new_date;
     dbRef.child("users").child(userUid).child("orderHistory").child(date_id).set(cartObject);
+    console.log(userUid)
     dbRef.child("users").child(userUid).child("cart").set(null);
+    // console.log(x)
 
     for(var categoryId in cartObject){
       if (categoryId != "totalCartPrice" && categoryId != "addressDetails"){
@@ -468,7 +494,7 @@ function updateOrderHistoryFirebase(){
         });
         var stock_remaining = productObject[product_id].stockRemaining;
         dbRef.child("prodcutCategory").child(category).child(product_id).child("stockRemaining").set(stock_remaining - quantity);
-        // window.alert(stock_remaining);
+        console.log("stock rem: "+stock_remaining);
       }
     }
     // dbRef.child("users").child(userUid).child("cart").child("totalCartPrice").set(totalCartPrice);
