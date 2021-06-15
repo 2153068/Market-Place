@@ -14,6 +14,7 @@ if (typeof module !== 'undefined' && module.exports) { // check we're server-sid
   var confirmYourOrder = methods.confirmYourOrder;
   var checkoutOpen = methods.checkoutOpen;
   var isEmpty = methods.isEmpty;
+  var indexOnOpen = methods.indexOnOpen;
 }
 
 var existingEmail = "shlomo@gmail.com";
@@ -181,8 +182,10 @@ QUnit.test( 'removeProduct() should return "Success"', assert => {
 QUnit.test( 'updateQuantity() should return "Success"', assert => {
   return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
       return cartToFirebase("1001").then( result => {
-        return updateQuantity("UBD2CEnogEM5sLGkYeTd0ycWd1Y2#Clothes_id1",50).then( result => {
+        return updateQuantity("UBD2CEnogEM5sLGkYeTd0ycWd1Y2#Clothes_id1",10).then( result => {
           assert.equal( result, "Success");
+          return removeProduct("UBD2CEnogEM5sLGkYeTd0ycWd1Y2#Clothes_id1").then( result => {
+          });
         });
       });
   })
@@ -195,6 +198,8 @@ QUnit.test( 'checkoutOpen() should return "?"', assert => {
         return updateQuantity("UBD2CEnogEM5sLGkYeTd0ycWd1Y2#Clothes_id1",50).then( result => {
           return checkoutOpen().then( result => {
             assert.equal( result, true);
+            return removeProduct("UBD2CEnogEM5sLGkYeTd0ycWd1Y2#Clothes_id1").then( result => {
+            });
           });        
         });
       });
@@ -206,28 +211,50 @@ QUnit.test( 'confirmYourOrder("street","suburb","city","province","2125") should
   return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
       return cartToFirebase("1001").then( result => {
         return updateQuantity("UBD2CEnogEM5sLGkYeTd0ycWd1Y2#Clothes_id1",5000).then( result => {
-          return confirmYourOrder("street","suburb","city","province","2125").then(result => {
-            assert.equal( result, "You do not have enough funds to complete this order");
-          })
+          return checkoutOpen().then( result => {
+            return confirmYourOrder("street","suburb","city","province","2125").then(result => {
+              assert.equal( result, "You do not have enough funds to complete this order");
+              return removeProduct("UBD2CEnogEM5sLGkYeTd0ycWd1Y2#Clothes_id1").then( result => {
+              });
+            })
+          });
         });
       });
   })
 });
 
-// //teting confirmYourOrder function for enough funds
-// QUnit.test( 'confirmYourOrder() should return "Your Order Is Confirmed!"', assert => {
-//   return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
-//       return cartToFirebase("1001").then( result => {
-//         return updateQuantity("UBD2CEnogEM5sLGkYeTd0ycWd1Y2#Clothes_id1",5).then( result => {
-//           return checkoutOpen().then( result => {
-//             return confirmYourOrder("street","suburb","city","province","2125").then(result => {
-//               assert.equal( result, "Your Order Is Confirmed!");
-//             });
-//           });
-//         });
-//       });
-//   })
-// });
+// teting confirmYourOrder function for address not given but enough funds
+QUnit.test( 'confirmYourOrder("","","","","") should return "Address details not provided"', assert => {
+  return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
+      return cartToFirebase("1001").then( result => {
+        return updateQuantity("UBD2CEnogEM5sLGkYeTd0ycWd1Y2#Clothes_id1",20).then( result => {
+          return checkoutOpen().then( result => {
+            return confirmYourOrder("","","","","").then(result => {
+              assert.equal( result, "Address details not provided");
+              return removeProduct("UBD2CEnogEM5sLGkYeTd0ycWd1Y2#Clothes_id1").then( result => {
+              });
+            })
+          });
+        });
+      });
+  })
+});
+
+// teting confirmYourOrder function for enough funds and address given
+QUnit.test( 'confirmYourOrder("street","suburb","city","province","2125") should return "Success"', assert => {
+  return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
+      return cartToFirebase("1001").then( result => {
+        return updateQuantity("UBD2CEnogEM5sLGkYeTd0ycWd1Y2#Clothes_id1",3).then( result => {
+          return checkoutOpen().then( result => {
+            return confirmYourOrder("street1","suburb1","city1","province1","21251").then(result => {
+              assert.equal( result, "Success");
+              // return removeProduct("UBD2CEnogEM5sLGkYeTd0ycWd1Y2#Clothes_id1").then( result => {});
+            })
+          });
+        });
+      });
+  })
+});
 
 // // testing isEmpty function when array is not empty 
 // QUnit.test( 'isEmpty([1,2,3]) testing, should return false', assert => {
