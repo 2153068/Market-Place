@@ -163,6 +163,207 @@
         }
       });
       
+      function viewAllOnOpen(){
+  //firebase database ref
+  const dbRef = firebase.database().ref();
+  dbRef.child("prodcutCategory").once("value", function(data) {
+    var category = data.val();  //all prodcuts object
+
+    var categoryN = new URL(location.href).searchParams.get("category");
+    var categoryName = categoryN;
+    var categoryValue = categoryName;
+
+    //create html columns dynamically
+    let row = document.createElement("div");
+    row.className = "row";
+
+    const container = document.getElementById("container");
+
+    let prodcutCategoryH = document.createElement("div");
+    prodcutCategoryH.className = "heading_container heading_center";
+
+    let prodcutCategory = document.createElement("h2");
+    prodcutCategory.textContent = categoryValue;
+    prodcutCategoryH.append(prodcutCategory);
+
+    container.append(prodcutCategoryH);
+
+    var j = 0;
+    for(var prodcutId in category[categoryName]){
+        //data from firebase
+        var nameValue = category[categoryName][prodcutId].name;
+        var priceValue = category[categoryName][prodcutId].price;
+        var descriptionValue = category[categoryName][prodcutId].description;
+        var stockRemainingValue = category[categoryName][prodcutId].stockRemaining;
+        var imageUrlValue = category[categoryName][prodcutId].imageUrl;
+
+        let divCol = document.createElement("div");
+        divCol.className = "col-sm-6 col-lg-4";
+        
+        let divBox = document.createElement("div");
+        divBox.className = "box";
+
+        let divImgBox = document.createElement("div");
+        divImgBox.className = "img-box";
+
+        //get Picture icons
+        let img = document.createElement("img");
+        var storageRef = firebase.storage().ref(); 
+
+        storageRef.child('productCategory/'+categoryValue+ "/" + prodcutId + "/image0" + '.jpg').getDownloadURL().then(function(url) {
+            img.src = url;
+            img.alt = "";
+        });
+
+        categoryArray = ["Clothes", "Food", "Games", "Sports", "Technology"];
+
+        var categoryId;
+        for(var i=1; i<categoryArray.length+1; i++){
+          if(categoryValue == categoryArray[i-1]){
+            categoryId = i*100;
+            break;
+          }
+        }
+
+        let aAdd = document.createElement("button");
+        aAdd.className = "add_cart_btn";
+        aAdd.textContent = "Add To Cart";
+        aAdd.setAttribute("onclick", "cartToFirebase("+categoryId+prodcutId.substring(2)+")");
+
+        
+        divImgBox.append(img);
+        divImgBox.append(aAdd);
+
+        //modal
+        let divModalF = document.createElement("div");
+        divModalF.className = "modal fade";
+        divModalF.id = "myModal"+ j;
+
+        let divModalD = document.createElement("div");
+        divModalD.className = "modal-dialog";
+
+        let divModalC = document.createElement("div");
+        divModalC.className = "modal-content";
+
+        let divModalH = document.createElement("div");
+        divModalH.className = "modal-header";
+
+        let btnModal = document.createElement("button");
+        btnModal.type = "button";
+        btnModal.className = "close";
+        btnModal.setAttribute('data-dismiss', "modal");
+        btnModal.innerHTML = "&times;";
+
+        let h4M = document.createElement("h4");
+        h4M.className = "modal-title";
+        h4M.textContent = nameValue;
+
+        divModalH.append(h4M);
+        divModalH.append(btnModal);
+
+        let divModalB = document.createElement("div");
+        divModalB.className = "modal-body";
+        
+        //get Picture icons for modal
+        let image = document.createElement("img"); 
+        storageRef.child('productCategory/'+categoryValue+ "/" + prodcutId + "/image0" + '.jpg').getDownloadURL().then(function(url) { 
+            image.src = url;
+            image.alt = "";
+        });
+        image.alt="Trulli";
+        image.width = "300";
+        image.height="300";
+
+        let pPrice = document.createElement("p");
+        pPrice.textContent = "Price: " + "R" +priceValue;
+
+        let pDescription = document.createElement("p");
+        pDescription.textContent = "Descriptiom: "+descriptionValue;
+
+        let pStock = document.createElement("p");
+        pStock.textContent = "Stock remaining: "+stockRemainingValue;
+
+        let btnModalAdd = document.createElement("button");
+        btnModalAdd.setAttribute('data-dismiss', "modal");
+        btnModalAdd.innerHTML = "Add To Cart";
+        
+        categoryArray = ["Clothes", "Food", "Games", "Sports", "Technology"];
+
+        var categoryId;
+        for(var i=1; i<categoryArray.length+1; i++){
+          if(categoryValue == categoryArray[i-1]){
+            categoryId = i*100;
+            break;
+          }
+        }
+
+        btnModalAdd.setAttribute("onclick", "cartToFirebase("+categoryId+prodcutId.substring(2)+")");
+
+        divModalB.append(image);
+        divModalB.append(pPrice);
+        divModalB.append(pDescription);
+        divModalB.append(pStock);
+        divModalB.append(btnModalAdd);
+
+        let divModalFooter = document.createElement("div");
+        divModalFooter.className = "modal-footer";
+
+        let btnDefault = document.createElement("button");
+        btnDefault.type = "button";
+        btnDefault.className = "btn btn-default";
+        btnDefault.setAttribute('data-dismiss', "modal");
+        btnDefault.textContent = "Close";
+
+        divModalFooter.append(btnDefault);
+
+        divModalC.append(divModalH);
+        divModalC.append(divModalB);
+        divModalC.append(divModalFooter);
+        divModalD.append(divModalC);
+        divModalF.append(divModalD);
+
+        let divDetailed = document.createElement("a");
+        divDetailed.className = "detail-box";
+        divDetailed.href = "";
+        
+        var s = "#myModal"+j;
+        //for modal
+        divDetailed.setAttribute('data-toggle', "modal");
+        divDetailed.setAttribute('data-target', s);
+
+        let h5Name = document.createElement("h5");
+        h5Name.textContent = nameValue;
+
+        divDetailed.append(h5Name);
+
+        let divInfo = document.createElement("div");
+        divInfo.className = "product-info";
+
+        let h5Span = document.createElement("h5");
+        
+        let spanAmount = document.createElement("span");
+        spanAmount.textContent = "R" + priceValue;
+
+        h5Span.append(spanAmount);
+
+        let divStar = document.createElement("div");
+        divStar.className = "star_container";
+
+        divInfo.append(h5Span);
+        divDetailed.append(divInfo);
+
+        divBox.append(divImgBox);
+        divBox.append(divDetailed)
+
+        divCol.append(divBox);
+        divCol.append(divModalF);  //modal
+        row.append(divCol);
+        j++;
+    }
+    //html
+    container.append(row);
+  });
+}
   </script>
 
   </body>
