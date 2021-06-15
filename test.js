@@ -248,7 +248,6 @@ QUnit.test( 'confirmYourOrder("street","suburb","city","province","2125") should
           return checkoutOpen().then( result => {
             return confirmYourOrder("street1","suburb1","city1","province1","21251").then(result => {
               assert.equal( result, "Success");
-              // return removeProduct("UBD2CEnogEM5sLGkYeTd0ycWd1Y2#Clothes_id1").then( result => {});
             })
           });
         });

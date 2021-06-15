@@ -308,9 +308,9 @@ function confirmYourOrder(streetAddress, suburb, city, province, postalCode){
             resolve(updateOrderHistoryFirebase());
             var message = print("Your Order Is Confirmed!");
             resolve(message);
-            if (isWebsite()){
+            // if (isWebsite()){
               window.location.href = "index.html";
-            }             
+            // }             
           }else{
               resolve("Address details not provided");
           }
