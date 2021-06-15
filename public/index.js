@@ -23,7 +23,6 @@ function register(fName, lName, dob, email, password, cPassword, exit){
             firebase.auth().createUserWithEmailAndPassword(email, password).then((userCredential) => {
               var user = userCredential.user.uid; 
               var rootRef = firebase.database().ref(); 
-              // console.log(rootRef)
               var usersRef = rootRef.child("users").child(user).child("details");   
               var userData = 
               {
@@ -35,12 +34,11 @@ function register(fName, lName, dob, email, password, cPassword, exit){
               };
               usersRef.set(userData, function(error){     
                 if(error){
-                  // console.log("error mes "+error.message)
                   if (isWebsite()) {
                     window.alert("Message : " + error.message);
                   }
                 }
-                else{           
+                else{  
                   message = "Success"
                   resolve(message);
                   if (isWebsite()) {
@@ -186,7 +184,6 @@ function updateQuantity(userUidAndCartId, quantity){ //seperated by #
       quantityInput = document.getElementById(categoryProductId).value;
     }else{
       quantityInput = quantity; 
-      // console.log("quantity is "+quantity)
     }
     // window.alert(categoryProductId)
     const rootRef = firebase.database().ref();
@@ -224,7 +221,6 @@ function checkoutOpen(){
               var category = cartObject[categoryId].category;
               var productId = cartObject[categoryId].productId
               var quantity = cartObject[categoryId].quantity;
-              // console.log(category+" " +productId+" "+quantity)
               dbRef.child("prodcutCategory").child(category).child(productId).once("value", function(data) {
                 var price = data.val().price;
                 dbRef.child("users").child(userUid).child("cart").child(categoryId).child("totalPrice").set(price*quantity, function(error){
@@ -295,10 +291,7 @@ function confirmYourOrder(streetAddress, suburb, city, province, postalCode){
         var available_money = userObject["details"].availableMoney;
         var total_cart_price = userObject["cart"].totalCartPrice;
         difference = available_money - total_cart_price;
-        // console.log(available_money +" "+total_cart_price)
-        // window.alert((available_money +" "+total_cart_price))
         if (difference >= 0){
-          //streetAddressI, suburbI, cityI, provinceI, postalCodeI
           if(address(streetAddress, suburb, city, province, postalCode)){  //not empty       
             firebase.auth().onAuthStateChanged(function(user){
               dbRef.on('value', function(datasnapshot){
@@ -412,18 +405,6 @@ function updateAddressUser(userUid, addressData){
   });
 }
 
-// function updateInFirebase(difference){
-//   firebase.auth().onAuthStateChanged(function(user){
-//     var userUid = user.uid;
-//     const dbRef = firebase.database().ref();
-//     dbRef.on('value', function(datasnapshot){
-//       dbRef.child("users").child(userUid).child("details").child("availableMoney").set(difference);
-//       // console.log("testing..")
-//       resolve(true)
-//     });
-//   });
-// }
-
 function updateOrderHistoryFirebase(){
   return new Promise( resolve => {
     var status = "Fail";
@@ -441,7 +422,6 @@ function updateOrderHistoryFirebase(){
       dbRef.child("users").child(userUid).child("cart").set(null);
 
       for(var categoryId in cartObject){
-        console.log("Categoty id "+ categoryId)
         if (categoryId != "totalCartPrice" && categoryId != "addressDetails"){
           var category = cartObject[categoryId].category;
           var product_id = cartObject[categoryId].productId;
@@ -457,10 +437,8 @@ function updateOrderHistoryFirebase(){
             }
             resolve(status);
           });
-          // window.alert(stock_remaining);
         }
       }
-      // dbRef.child("users").child(userUid).child("cart").child("totalCartPrice").set(totalCartPrice);
     });
   });
 }
@@ -531,36 +509,49 @@ function goToOrderHistory(){
 }
 
 function init(){
-  firebase.auth().onAuthStateChanged(function(user){
-    const dbRef = firebase.database().ref();
-
-    //welcome
-    dbRef.child("users").child(user.uid).child("details").child("firstName").once("value", function(data) {
-      var name = data.val();  
-      document.getElementById("fName").innerHTML ="Hi " + name;
-    });
-
-    //cart
-    dbRef.child("users").child(user.uid).child("cart").once("value", function(data) {
-      var products = data.val();
-      if(products != null){
-        var productsSize = Object.keys(products).length;
-        if("totalCartPrice" in products){
-          productsSize--;
+  return new Promise( resolve => {
+    var status = "fail";
+    firebase.auth().onAuthStateChanged(function(user){
+      const dbRef = firebase.database().ref();
+      //welcome
+      dbRef.child("users").child(user.uid).child("details").child("firstName").once("value", function(data) {
+        var name = data.val(); 
+        if (isWebsite()) {
+          document.getElementById("fName").innerHTML ="Hi " + name;
         }
-        if("addressDetails" in products){
-          productsSize--;
-        }
-        if(productsSize != 0){
-          document.getElementById("cart").innerHTML ="CART (" + productsSize+")";
-        }
+      });
+      
+      //cart
+      dbRef.child("users").child(user.uid).child("cart").once("value", function(data) {
+        var products = data.val();
+        if(products != null){ 
+          var productsSize = Object.keys(products).length;
+          if("totalCartPrice" in products){
+            productsSize--;
+          }
+          if("addressDetails" in products){
+            productsSize--;
+          }
+          if(productsSize != 0){
+            resolve("Products in cart")
+            if (isWebsite()){
+              document.getElementById("cart").innerHTML ="CART (" + productsSize+")";
+            }
+          }
+          else{
+            if (isWebsite()){
+              document.getElementById("cart").innerHTML ="CART";
+            }
+            resolve("Products not in cart")
+          }
+        } 
         else{
-          document.getElementById("cart").innerHTML ="CART";
-        }
-      } 
-      else{
-        document.getElementById("cart").innerHTML = "CART";
-      } 
+          resolve("No Cart?")
+          if (isWebsite()){
+            document.getElementById("cart").innerHTML = "CART";
+          }
+        } 
+      });
     });
   });
 }
@@ -603,6 +594,7 @@ if (typeof module !== 'undefined' && module.exports) {
        checkoutOpen,
        confirmYourOrder,
        isEmpty,
+       init,
      };
   }
   

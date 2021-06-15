@@ -148,105 +148,105 @@
       });
 
       function cartOnOpen(){
-  //firebase database ref
-  var storageRef = firebase.storage().ref(); 
-  firebase.auth().onAuthStateChanged(function(user){
-    var userUid = user.uid;
+        //firebase database ref
+        var storageRef = firebase.storage().ref(); 
+        firebase.auth().onAuthStateChanged(function(user){
+          var userUid = user.uid;
 
-    const dbRef = firebase.database().ref();
-    dbRef.on('value', function(datasnapshot){
-      dbRef.child("users").child(userUid).child("cart").once("value", function(data) {
-        var cartObject = data.val();  //all prodcuts object
-        const shopping_cart = document.getElementById("shopping_cart");
-        for(var cartId in cartObject){
-          if(cartId == "addressDetails" || cartId == "totalCartPrice"){
-            continue;
-          }
-          var category = cartObject[cartId].category;
-          var productId = cartObject[cartId].productId;
-          var quantity = cartObject[cartId].quantity;
+          const dbRef = firebase.database().ref();
+          dbRef.on('value', function(datasnapshot){
+            dbRef.child("users").child(userUid).child("cart").once("value", function(data) {
+              var cartObject = data.val();  //all prodcuts object
+              const shopping_cart = document.getElementById("shopping_cart");
+              for(var cartId in cartObject){
+                if(cartId == "addressDetails" || cartId == "totalCartPrice"){
+                  continue;
+                }
+                var category = cartObject[cartId].category;
+                var productId = cartObject[cartId].productId;
+                var quantity = cartObject[cartId].quantity;
 
-          //get product Details
-          dbRef.child("prodcutCategory").child(category).child(productId).once("value", function(data) {
-            var productObject = data.val();  //all prodcuts object
-            var description = productObject.description;
-            var imageUrl = productObject.imageUrl;
-            var name = productObject.name;
-            var price = productObject.price;
-            
-            let divProduct = document.createElement("div");
-            divProduct.className = "product";
+                //get product Details
+                dbRef.child("prodcutCategory").child(category).child(productId).once("value", function(data) {
+                  var productObject = data.val();  //all prodcuts object
+                  var description = productObject.description;
+                  var imageUrl = productObject.imageUrl;
+                  var name = productObject.name;
+                  var price = productObject.price;
+                  
+                  let divProduct = document.createElement("div");
+                  divProduct.className = "product";
 
-            let divProduct_image = document.createElement("div");
-            divProduct_image.className = "product-image";
+                  let divProduct_image = document.createElement("div");
+                  divProduct_image.className = "product-image";
 
-            let img = document.createElement("img");
-            storageRef.child('productCategory/'+category+"/"+productId+ "/image0" + '.jpg').getDownloadURL().then(function(url) {
-              img.src = url;
+                  let img = document.createElement("img");
+                  storageRef.child('productCategory/'+category+"/"+productId+ "/image0" + '.jpg').getDownloadURL().then(function(url) {
+                    img.src = url;
+                  });
+
+                  divProduct_image.append(img);
+                  divProduct.append(divProduct_image);
+
+                  let divProductDetails = document.createElement("div");
+                  divProductDetails.className = "product-details";
+
+                  let divProductTitle = document.createElement("div");
+                  divProductTitle.className = "product-title";
+                  divProductTitle.textContent = name;
+
+                  let pProductDescription = document.createElement("p");
+                  pProductDescription.className = "product-description";
+                  pProductDescription.textContent = description;
+
+                  divProductDetails.append(divProductTitle);
+                  divProductDetails.append(pProductDescription);
+                  divProduct.append(divProductDetails);
+
+                  let divProductPrice = document.createElement("div");
+                  divProductPrice.className = "product-price";
+                  divProductPrice.textContent = price;
+
+                  let divProductQuantity = document.createElement("div");
+                  divProductQuantity.className = "product-quantity";
+
+                  var cartId = category+"_" + productId;
+
+                  let inputNumber = document.createElement("input");
+                  inputNumber.type = "number"
+                  inputNumber.value = quantity;
+                  inputNumber.min = 1;
+                  inputNumber.id = cartId;
+
+                  inputNumber.setAttribute('onchange', 'updateQuantity("'+userUid+'#'+cartId+'")');  //amazing!!!!!!!!!
+
+                  divProductQuantity.append(inputNumber);
+                  divProduct.append(divProductPrice);
+                  divProduct.append(divProductQuantity);
+
+                  let divProductRemoval = document.createElement("div");
+                  divProductRemoval.className = "product-removal";
+
+                  var cartId = category+"_" + productId;
+
+                  let btnRemoveProduct = document.createElement("button");
+                  btnRemoveProduct.className = "remove-product";
+                  btnRemoveProduct.textContent = "Remove";
+                  btnRemoveProduct.setAttribute('onclick', 'removeProduct("'+userUid+'#'+cartId+'")');  //amazing!!!!!!!!!
+
+                  divProductRemoval.append(btnRemoveProduct);
+                  divProduct.append(divProductRemoval);
+                  shopping_cart.append(divProduct);
+                });
+              }
             });
-
-            divProduct_image.append(img);
-            divProduct.append(divProduct_image);
-
-            let divProductDetails = document.createElement("div");
-            divProductDetails.className = "product-details";
-
-            let divProductTitle = document.createElement("div");
-            divProductTitle.className = "product-title";
-            divProductTitle.textContent = name;
-
-            let pProductDescription = document.createElement("p");
-            pProductDescription.className = "product-description";
-            pProductDescription.textContent = description;
-
-            divProductDetails.append(divProductTitle);
-            divProductDetails.append(pProductDescription);
-            divProduct.append(divProductDetails);
-
-            let divProductPrice = document.createElement("div");
-            divProductPrice.className = "product-price";
-            divProductPrice.textContent = price;
-
-            let divProductQuantity = document.createElement("div");
-            divProductQuantity.className = "product-quantity";
-
-            var cartId = category+"_" + productId;
-
-            let inputNumber = document.createElement("input");
-            inputNumber.type = "number"
-            inputNumber.value = quantity;
-            inputNumber.min = 1;
-            inputNumber.id = cartId;
-
-            inputNumber.setAttribute('onchange', 'updateQuantity("'+userUid+'#'+cartId+'")');  //amazing!!!!!!!!!
-
-            divProductQuantity.append(inputNumber);
-            divProduct.append(divProductPrice);
-            divProduct.append(divProductQuantity);
-
-            let divProductRemoval = document.createElement("div");
-            divProductRemoval.className = "product-removal";
-
-            var cartId = category+"_" + productId;
-
-            let btnRemoveProduct = document.createElement("button");
-            btnRemoveProduct.className = "remove-product";
-            btnRemoveProduct.textContent = "Remove";
-            btnRemoveProduct.setAttribute('onclick', 'removeProduct("'+userUid+'#'+cartId+'")');  //amazing!!!!!!!!!
-
-            divProductRemoval.append(btnRemoveProduct);
-            divProduct.append(divProductRemoval);
-            shopping_cart.append(divProduct);
           });
-        }
-      });
-    });
-  });
-  let btnCheckout = document.createElement("button");
-  btnCheckout.className = "checkout";
-  btnCheckout.textContent = "Checkout";
-  btnCheckout.setAttribute('onclick', 'checkout()');  //amazing!!!!!!!!!
-  shopping_cart.append(btnCheckout);
+        });
+        let btnCheckout = document.createElement("button");
+        btnCheckout.className = "checkout";
+        btnCheckout.textContent = "Checkout";
+        btnCheckout.setAttribute('onclick', 'checkout()');  //amazing!!!!!!!!!
+        shopping_cart.append(btnCheckout);
 }
   </script>
 

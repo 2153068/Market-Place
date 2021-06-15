@@ -14,7 +14,7 @@ if (typeof module !== 'undefined' && module.exports) { // check we're server-sid
   var confirmYourOrder = methods.confirmYourOrder;
   var checkoutOpen = methods.checkoutOpen;
   var isEmpty = methods.isEmpty;
-  // var indexOnOpen = methods.indexOnOpen;
+  var init = methods.init;
 }
 
 var existingEmail = "shlomo@gmail.com";
@@ -252,6 +252,33 @@ QUnit.test( 'confirmYourOrder("street","suburb","city","province","2125") should
           });
         });
       });
+  })
+});
+
+
+// teting init function when items are in the cart
+QUnit.test( 'init() should return "Success"', assert => {
+  return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
+      return cartToFirebase("1001").then( result => {
+        return updateQuantity("UBD2CEnogEM5sLGkYeTd0ycWd1Y2#Clothes_id1",3).then( result => {
+          return checkoutOpen().then( result => {
+            return init().then(result => {
+              assert.equal( result, "Products in cart");
+              return removeProduct("UBD2CEnogEM5sLGkYeTd0ycWd1Y2#Clothes_id1").then( result => {
+              });
+            })
+          });
+        });
+      });
+  })
+});
+
+// teting init function when items are not in the cart
+QUnit.test( 'init() should return "Success"', assert => {
+  return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
+    return init().then(result => {
+      assert.equal( result, "Products not in cart");
+    }) 
   })
 });
 
