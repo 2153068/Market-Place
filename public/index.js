@@ -443,35 +443,40 @@ function updateOrderHistoryFirebase(){
   });
 }
 
-function checkoutDelevery(){  //called when opening the page
-  var addressDetails = [];  //2d matrix containg address info
-  firebase.auth().onAuthStateChanged(function(user){
-    var userUid = user.uid;
-    const dbRef = firebase.database().ref();
-    dbRef.child("users").child(userUid).child("last2Addresses").once("value", function(data) {
-      var address = data.val();
-      for(var addressId in address){
-        var currArray = [];
-        for(var addressDetail in address[addressId]){
-          currArray.push(address[addressId][addressDetail]);
+function checkoutDelevery(){ //called when opening the page
+  return new Promise( resolve => { 
+    var addressDetails = [];  //2d matrix containg address info
+    firebase.auth().onAuthStateChanged(function(user){
+      var userUid = user.uid;
+      const dbRef = firebase.database().ref();
+      dbRef.child("users").child(userUid).child("last2Addresses").once("value", function(data) {
+        var address = data.val();
+        for(var addressId in address){
+          var currArray = [];
+          for(var addressDetail in address[addressId]){
+            currArray.push(address[addressId][addressDetail]);
+          }
+          addressDetails.push(currArray);
         }
-        addressDetails.push(currArray);
-      }
+        var addressDetailsArr = ["city", "postalCode", "province", "streetAddress", "suburb"]
+        for(var j=0; j<addressDetails[0].length; j++){
+          var addressDetailsSpecific = new Array();
+          for(var i=0; i<addressDetails.length; i++){
+            addressDetailsSpecific[i] = addressDetails[i][j];
+          }
+          var options = '';
 
-      var addressDetailsArr = ["city", "postalCode", "province", "streetAddress", "suburb"]
-      for(var j=0; j<addressDetails[0].length; j++){
-        var addressDetailsSpecific = new Array();
-        for(var i=0; i<addressDetails.length; i++){
-          addressDetailsSpecific[i] = addressDetails[i][j];
+          for (var i = 0; i < addressDetailsSpecific.length; i++) {
+            options += '<option value="' + addressDetailsSpecific[i] + '" />';
+          }
+          resolve(options);
+          print(options)
+          //auto populate
+          if(isWebsite()){
+            document.getElementById(addressDetailsArr[j]).innerHTML = options;
+          }
         }
-        var options = '';
-
-        for (var i = 0; i < addressDetailsSpecific.length; i++) {
-          options += '<option value="' + addressDetailsSpecific[i] + '" />';
-        }
-        //auto populate
-        document.getElementById(addressDetailsArr[j]).innerHTML = options;
-      }
+      });
     });
   });
 }
@@ -595,6 +600,7 @@ if (typeof module !== 'undefined' && module.exports) {
        confirmYourOrder,
        isEmpty,
        init,
+       checkoutDelevery,
      };
   }
   

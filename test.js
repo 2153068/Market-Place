@@ -13,6 +13,7 @@ if (typeof module !== 'undefined' && module.exports) { // check we're server-sid
   var updateQuantity = methods.updateQuantity;
   var confirmYourOrder = methods.confirmYourOrder;
   var checkoutOpen = methods.checkoutOpen;
+  var checkoutDelevery = methods.checkoutDelevery;
   var isEmpty = methods.isEmpty;
   var init = methods.init;
 }
@@ -279,6 +280,17 @@ QUnit.test( 'init() should return "Success"', assert => {
     return init().then(result => {
       assert.equal( result, "Products not in cart");
     }) 
+  })
+});
+
+// teting checkoutDelevery function 
+QUnit.test( 'checkoutDelevery() should return "?"', assert => {
+  return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
+    return cartToFirebase("1001").then( result => {
+      return checkoutDelevery().then( result => {
+        assert.equal( result, "<option value=\"city1\" /><option value=\"city1\" />");
+      });      
+    });
   })
 });
 
