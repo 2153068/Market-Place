@@ -87,7 +87,6 @@ QUnit.test( 'register("first name","last name","17-22-2000","shlomogmail.co.za",
 
 //Registration - all correct details done at the botom of the pgae
 
-//Sprint 1
 //Login acceptance criteria 
 
 // login - valid password given and email not given 
