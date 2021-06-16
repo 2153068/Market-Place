@@ -19,7 +19,7 @@ if (typeof module !== 'undefined' && module.exports) { // check we're server-sid
 }
 
 var existingEmail = "shlomo@gmail.com";
-//sprint 1 
+//Sprint 1 
 //Registration acceptance criteria
 
 //first password is not given but all other inputs are valid
@@ -87,7 +87,7 @@ QUnit.test( 'register("first name","last name","17-22-2000","shlomogmail.co.za",
 
 //Registration - all correct details done at the botom of the pgae
 
-
+//Sprint 1
 //Login acceptance criteria 
 
 // login - valid password given and email not given 
@@ -132,13 +132,15 @@ QUnit.test( 'login("shlomo@brill.com", "123") should return "The password is inv
   });
 });
 
-// ------------------------------------------------------
 // logout - testing if successful
 QUnit.test( 'logout() should return "success"', assert => {
   return logout().then( result => {
     assert.equal( result, "success");
   });
 });
+// ------------------------------------------------------
+
+//Sprint 2
 
 //testing getCategoryAndProductId
 //used for checking out. Length = 4
@@ -192,6 +194,10 @@ QUnit.test( 'updateQuantity() should return "Success"', assert => {
   })
 });
 
+// ------------------------------------------------------
+
+//Sprint 3
+
 // teting checkoutOpen function 
 QUnit.test( 'checkoutOpen() should return "?"', assert => {
   return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
@@ -206,6 +212,47 @@ QUnit.test( 'checkoutOpen() should return "?"', assert => {
       });
   })
 });
+
+// testing init function when items are in the cart
+QUnit.test( 'init() should return "Success"', assert => {
+  return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
+      return cartToFirebase("1001").then( result => {
+        return updateQuantity("UBD2CEnogEM5sLGkYeTd0ycWd1Y2#Clothes_id1",3).then( result => {
+          return checkoutOpen().then( result => {
+            return init().then(result => {
+              assert.equal( result, "Products in cart");
+              return removeProduct("UBD2CEnogEM5sLGkYeTd0ycWd1Y2#Clothes_id1").then( result => {
+              });
+            })
+          });
+        });
+      });
+  })
+});
+
+// teting init function when items are not in the cart
+QUnit.test( 'init() should return "Success"', assert => {
+  return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
+    return init().then(result => {
+      assert.equal( result, "Products not in cart");
+    }) 
+  })
+});
+
+// teting checkoutDelevery function 
+QUnit.test( 'checkoutDelevery() should return "?"', assert => {
+  return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
+    return cartToFirebase("1001").then( result => {
+      return checkoutDelevery().then( result => {
+        assert.equal( result, "<option value=\"city1\" /><option value=\"city1\" />");
+      });      
+    });
+  })
+});
+
+// ------------------------------------------------------
+
+//Sprint 4
 
 // teting confirmYourOrder function for not enough funds but valid address
 QUnit.test( 'confirmYourOrder("street","suburb","city","province","2125") should return "You do not have enough funds to complete this order"', assert => {
@@ -256,49 +303,19 @@ QUnit.test( 'confirmYourOrder("street","suburb","city","province","2125") should
   })
 });
 
+// ------------------------------------------------------
 
-// teting init function when items are in the cart
-QUnit.test( 'init() should return "Success"', assert => {
-  return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
-      return cartToFirebase("1001").then( result => {
-        return updateQuantity("UBD2CEnogEM5sLGkYeTd0ycWd1Y2#Clothes_id1",3).then( result => {
-          return checkoutOpen().then( result => {
-            return init().then(result => {
-              assert.equal( result, "Products in cart");
-              return removeProduct("UBD2CEnogEM5sLGkYeTd0ycWd1Y2#Clothes_id1").then( result => {
-              });
-            })
-          });
-        });
-      });
-  })
-});
-
-// teting init function when items are not in the cart
-QUnit.test( 'init() should return "Success"', assert => {
-  return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
-    return init().then(result => {
-      assert.equal( result, "Products not in cart");
-    }) 
-  })
-});
-
-// teting checkoutDelevery function 
-QUnit.test( 'checkoutDelevery() should return "?"', assert => {
-  return firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
-    return cartToFirebase("1001").then( result => {
-      return checkoutDelevery().then( result => {
-        assert.equal( result, "<option value=\"city1\" /><option value=\"city1\" />");
-      });      
-    });
-  })
-});
+// Other
 
 // testing isEmpty function when array is not empty 
 QUnit.test( 'isEmpty([1,2,3]) testing, should return false', assert => {
   result = isEmpty([1,2,3]);
   assert.equal( result, false);
 });
+
+// ------------------------------------------------------
+
+// Sprint 1 Registration user story
 
 randEmail = genrateRandomEmail(5);
 // All Registration details are valid with random email created
@@ -307,5 +324,7 @@ QUnit.test( 'register("first name","last name","17-22-2000","'+randEmail+'","123
     assert.equal( result, "Success");
   });
 });
+
+// ------------------------------------------------------
 
 if (typeof module !== 'undefined' && module.exports) { QUnit.load(); } // run the tests
